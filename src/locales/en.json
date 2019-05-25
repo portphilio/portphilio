@@ -1,4 +1,12 @@
 {
   "my-profile": "My Profile",
-  "logout": "Logout"
+  "logout": "Logout",
+  "pages": {
+    "home": {
+      "title": "Home"
+    },
+    "about": {
+      "title": "About"
+    }
+  }
 }

@@ -1,10 +1,10 @@
 const fs = require('fs')
-const VuetifyLoaderPlugin = require('vuetify-loader/lib/plugin')
 
 module.exports = {
   css: {
     loaderOptions: {
       sass: {
+        data: '@import "~@/sass/main.scss"',
         implementation: require('sass'),
         fiber: require('fibers')
       }
@@ -22,9 +22,6 @@ module.exports = {
         }
       }
     }
-    config.plugins.push(
-      new VuetifyLoaderPlugin()
-    )
   },
 
   pluginOptions: {
@@ -34,5 +31,11 @@ module.exports = {
       localeDir: 'locales',
       enableInSFC: false
     }
+  },
+
+  pwa: {
+    name: 'Portphilio',
+    themeColor: '#f06292',
+    msTileColor: '#f06292'
   }
 }

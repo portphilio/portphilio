@@ -1,5 +1,4 @@
 import Vue from 'vue'
-import './plugins/vuetify'
 import { abilitiesPlugin, Can } from '@casl/vue'
 import vuetify from '@/plugins/vuetify'
 import App from '@/App.vue'
