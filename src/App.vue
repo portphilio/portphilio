@@ -103,8 +103,8 @@
   }
 </script>
 
-<style lang="sass" scoped>
+<style lang="sass">
 .v-toolbar__items
   .v-btn
-    padding-top: 5px
+    padding-top: 5px !important
 </style>
