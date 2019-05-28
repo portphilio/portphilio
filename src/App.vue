@@ -7,14 +7,26 @@
       :mini-variant="mini"
     >
       <v-list>
+        <can I="update" a="Artifact">
+          <a-menu-item
+            to="/dashboard"
+            :icon="icons.dashboard"
+            :text="$t('pages.dashboard.title')"
+          />
+          <a-menu-item
+            to="/artifacts"
+            :icon="icons.artifacts"
+            :text="$t('pages.artifacts.title')"
+          />
+        </can>
         <a-menu-item
           to="/"
-          icon="mdi-home"
+          :icon="icons.home"
           :text="$t('pages.home.title')"
         />
         <a-menu-item
           to="/about"
-          icon="mdi-information"
+          :icon="icons.about"
           :text="$t('pages.about.title')"
         />
         <v-divider />
@@ -47,7 +59,7 @@
       <v-toolbar-title class="headline text-uppercase pt-1 pink--text text--darken-3">
         Portphilio
       </v-toolbar-title>
-      <v-spacer></v-spacer>
+      <v-spacer />
       <v-toolbar-items>
         <v-btn
           v-if="!isAuthenticated"
@@ -64,7 +76,7 @@
     </v-app-bar>
 
     <v-content>
-      <router-view/>
+      <router-view />
     </v-content>
     <v-footer
       app
@@ -76,6 +88,7 @@
 </template>
 
 <script>
+  import { mdiHome, mdiInformation, mdiViewDashboard, mdiFileDocumentBoxMultiple } from '@mdi/js'
   import AMenuItem from '@/components/menus/AMenuItem'
   import TheAccountMenu from '@/components/menus/TheAccountMenu'
   export default {
@@ -86,7 +99,13 @@
     },
     data: () => ({
       dark: false,
-      drawer: true
+      drawer: true,
+      icons: {
+        dashboard: mdiViewDashboard,
+        artifacts: mdiFileDocumentBoxMultiple,
+        home: mdiHome,
+        about: mdiInformation
+      }
     }),
     computed: {
       copy () {
@@ -107,4 +126,20 @@
 .v-toolbar__items
   .v-btn
     padding-top: 5px !important
+
+.v-btn__content
+  padding-top: 4px
+
+.v-btn__content .v-icon--left
+  margin-left: 0
+  margin-top: -4px
+
+.v-list-item__action:first-child
+  margin-right: 8px
+
+.v-list-item .v-list-item__content
+  padding: 14px 0 10px
+
+.v-list--dense .v-list-item .v-list-item__content
+  padding: 10px 0 6px
 </style>

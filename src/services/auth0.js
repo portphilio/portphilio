@@ -16,7 +16,8 @@ export const createAuth = ({
   audience = `https://${domain}/userinfo`,
   redirectUri = 'http://localhost:8080/handle-auth',
   responseType = 'id_token token',
-  scope = 'openid profile email'
+  scope = 'openid profile email',
+  accessType = 'offline' // forces google-oauth2 connections to provide refresh tokens
 } = {}) => {
   /**
    * Configuration options for instantiating
@@ -30,7 +31,8 @@ export const createAuth = ({
     redirectUri,
     audience,
     responseType,
-    scope
+    scope,
+    accessType
   }
 
   /**

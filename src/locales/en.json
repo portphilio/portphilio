@@ -1,12 +1,64 @@
 {
   "my-profile": "My Profile",
   "logout": "Logout",
+  "components": {
+    "to-do-list": {
+      "new-note": "New Note",
+      "new-note-hint": "Add a note or to-do item"
+    }
+  },
+  "dialogs": {
+    "google-drive": {
+      "button": "Google Drive"
+    }
+  },
+  "menus": {
+    "account": {
+      "my-profile": "My Profile",
+      "logout": "Logout"
+    }
+  },
   "pages": {
+    "about": {
+      "title": "About"
+    },
+    "artifacts": {
+      "title": "Artifacts",
+      "search": "Search",
+      "add-new": "New Artifact",
+      "column-labels": {
+        "name": "Name",
+        "status": "Current Status",
+        "created_at": "Created",
+        "updated_at": "Updated"
+      }
+    },
+    "dashboard": {
+      "title": "Dashboard"
+    },
+    "handle-auth": {
+      "logging-in": "Logging in..."
+    },
     "home": {
       "title": "Home"
     },
-    "about": {
-      "title": "About"
+    "new-artifact": {
+      "title": "New Artifact",
+      "instructions": "Instructions",
+      "instructions-text": "Fill out the form below and click 'Save'.",
+      "guidance": "Guidance",
+      "name": "Artifact Name",
+      "name-hint": "Good names are short, descriptive, and pique interest",
+      "status": "Artifact Status",
+      "status-hint": "Is it done yet? It's okay if it's only an idea or a work-in-progress. You can save it and finish it later.",
+      "link": "Link to Artifact",
+      "narrative": "Narrative",
+      "narrative-hint": "What story does this artifact tell about you? See the 'Guidance' section above for ideas about what to write here.",
+      "tags": "Keywords/Tags",
+      "tags-hint": "A good rule-of-thumb is that each artifact should have 3-5 key workd or phrases to describe and categorize it. Hit [enter] after typing each tag.",
+      "save": "Save",
+      "save-success": "The artifact was saved successfully!",
+      "save-failure": "There was a problem saving the artifact."
     }
   }
 }

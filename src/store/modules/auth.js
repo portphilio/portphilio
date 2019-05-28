@@ -291,7 +291,7 @@ const actions = {
       return dispatch('refresh')
     }
     // fresh login needed
-    return Promise.resolve('login')
+    return dispatch('login')
   },
 
   /**

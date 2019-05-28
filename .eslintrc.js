@@ -21,7 +21,7 @@ module.exports = {
     'vue/max-attributes-per-line': [
       'error',
       {
-        ignore: ['this']
+        singleline: 2
       }
     ]
   },

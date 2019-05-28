@@ -6,57 +6,58 @@
   >
     <template v-slot:activator="{ on }">
       <v-btn
-        flat
+        text
         class="pr-0"
         v-on="on"
       >
         <v-avatar size="38">
-          <img :src="avatar">
+          <img :src="$store.getters['auth/avatar']">
         </v-avatar>
-        <v-icon>expand_more</v-icon>
+        <v-icon>{{ icons.dropdown }}</v-icon>
       </v-btn>
     </template>
     <v-list
       dense
       light
     >
-      <v-list-tile to="account">
-        <v-list-tile-action>
-          <v-icon>account_box</v-icon>
-        </v-list-tile-action>
-        <v-list-tile-content>
-          <v-list-tile-title class="text-capitalize">
-            {{ $t('my-profile') }}
-          </v-list-tile-title>
-        </v-list-tile-content>
-      </v-list-tile>
-      <v-list-tile @click="logout()">
-        <v-list-tile-action>
-          <v-icon>meeting_room</v-icon>
-        </v-list-tile-action>
-        <v-list-tile-content>
-          <v-list-tile-title class="text-capitalize">
-            {{ $t('logout') }}
-          </v-list-tile-title>
-        </v-list-tile-content>
-      </v-list-tile>
+      <v-list-item to="account">
+        <v-list-item-action>
+          <v-icon>{{ icons.profile }}</v-icon>
+        </v-list-item-action>
+        <v-list-item-content>
+          <v-list-item-title class="text-capitalize">
+            {{ $t('menus.account.my-profile') }}
+          </v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+      <v-list-item @click="logout()">
+        <v-list-item-action>
+          <v-icon>{{ icons.logout }}</v-icon>
+        </v-list-item-action>
+        <v-list-item-content>
+          <v-list-item-title class="text-capitalize">
+            {{ $t('menus.account.logout') }}
+          </v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
     </v-list>
   </v-menu>
 </template>
 
 <script>
+  import { mdiAccountBox, mdiExitRun, mdiChevronDown } from '@mdi/js'
   export default {
     name: 'TheAccountMenu',
-    props: {
-      avatar: {
-        type: null,
-        required: true,
-        default: ''
+    data: () => ({
+      icons: {
+        dropdown: mdiChevronDown,
+        profile: mdiAccountBox,
+        logout: mdiExitRun
       }
-    },
+    }),
     methods: {
       logout () {
-        this.$store.dispatch('auth/logout').then(function () {
+        this.$store.dispatch('auth/logout', process.env.VUE_APP_AUTH0_LOGOUT_URI).then(function () {
           this.$router.push('/')
         })
       }

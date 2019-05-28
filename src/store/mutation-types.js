@@ -27,6 +27,14 @@ export const PROFILE_UPDATE_SUCCESS = 'PROFILE_UPDATE_SUCCESS'
 export const PROFILE_UPDATE_FAILURE = 'PROFILE_UPDATE_FAILURE'
 
 /**
+ * User profile management
+ */
+export const SET_API = 'SET_API'
+export const API_REQUEST = 'API_REQUEST'
+export const API_SUCCESS = 'API_SUCCESS'
+export const API_FAILURE = 'API_FAILURE'
+
+/**
  * Common module
  */
 export const TOGGLE_NAV_DRAWER_MINI = 'TOGGLE_NAV_DRAWER_MINI'

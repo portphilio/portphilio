@@ -2,6 +2,8 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import { store, ability } from '@/store'
 import Home from './views/Home.vue'
+import TheDashboardPage from '@/components/pages/TheDashboardPage'
+import TheHandleAuthPage from '@/components/pages/TheHandleAuthPage'
 
 Vue.use(Router)
 
@@ -20,12 +22,38 @@ const router = new Router({
     {
       path: '/about',
       name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (about.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
       component: () => import(/* webpackChunkName: "about" */ './views/About.vue'),
       meta: {
         icon: 'mdi-information'
+      }
+    },
+    {
+      path: '/artifacts',
+      name: 'artifacts',
+      component: () => import(/* webpackChunkName: "artifacts" */ '@/components/pages/artifacts/TheArtifactsPage.vue'),
+      meta: {
+        icon: 'mdi-file-document-box-multiple'
+      }
+    },
+    {
+      path: '/artifacts/new',
+      name: 'new artifact',
+      component: () => import(/* webpackChunkName: "artifacts" */ '@/components/pages/artifacts/TheNewArtifactPage.vue'),
+      meta: {
+        icon: 'mdi-file-document-box-multiple'
+      }
+    },
+    {
+      path: '/handle-auth',
+      name: 'handle-auth',
+      component: TheHandleAuthPage
+    },
+    {
+      path: '/dashboard',
+      name: 'dashboard',
+      component: TheDashboardPage,
+      meta: {
+        icon: 'mdi-view-dashboard'
       }
     }
   ]
