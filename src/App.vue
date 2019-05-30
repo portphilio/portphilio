@@ -1,5 +1,5 @@
 <template>
-  <v-app :dark="dark">
+  <v-app>
     <v-navigation-drawer
       v-model="drawer"
       app
@@ -36,7 +36,7 @@
             color="pink darken-3"
             @click="$store.dispatch('common/toggleNavDrawerMini')"
           >
-            <v-icon>{{ mini ? 'mdi-chevron-right' : 'mdi-chevron-left' }}</v-icon>
+            <v-icon>{{ mini ? icons.right : icons.left }}</v-icon>
           </v-btn>
         </v-list-item>
       </v-list>
@@ -88,7 +88,7 @@
 </template>
 
 <script>
-  import { mdiHome, mdiInformation, mdiViewDashboard, mdiFileDocumentBoxMultiple } from '@mdi/js'
+  import { mdiHome, mdiInformation, mdiViewDashboard, mdiFileDocumentBoxMultiple, mdiChevronLeft, mdiChevronRight } from '@mdi/js'
   import AMenuItem from '@/components/menus/AMenuItem'
   import TheAccountMenu from '@/components/menus/TheAccountMenu'
   export default {
@@ -98,13 +98,14 @@
       TheAccountMenu
     },
     data: () => ({
-      dark: false,
       drawer: true,
       icons: {
-        dashboard: mdiViewDashboard,
+        about: mdiInformation,
         artifacts: mdiFileDocumentBoxMultiple,
+        dashboard: mdiViewDashboard,
         home: mdiHome,
-        about: mdiInformation
+        left: mdiChevronLeft,
+        right: mdiChevronRight
       }
     }),
     computed: {

@@ -15,6 +15,7 @@ import {
   REFRESH_SUCCESS,
   REFRESH_FAILURE,
   LOGOUT,
+  SET_API_USER_ID,
   PROFILE_REQUEST,
   PROFILE_SUCCESS,
   PROFILE_FAILURE,
@@ -103,6 +104,7 @@ const auth = createAuth({
  * @property {number}   expiresAt        - A unix timestamp indicating when the {@link initialState.accessToken} expires
  * @property {object}   error            - An object describing why actions for this module may have failed
  * @property {string}   user_id          - The unique Auth0 user id used for retrieving/updating user metadata
+ * @property {string}   apiUserId        - The userId associated with this user in the backend API (feathers)
  * @property {string[]} roles            - An array of strings indicating roles held by this user in this app
  * @property {object}   abilities        - An object controlling what actions this user is capable of performing in this app
  */
@@ -114,6 +116,7 @@ const initialState = {
   expiresAt: null,
   error: null,
   user_id: null,
+  apiUserId: null,
   roles: [],
   abilities: null,
   /**
@@ -226,6 +229,9 @@ const mutations = {
   },
   [LOGOUT] (state) {
     Object.assign(state, initialState)
+  },
+  [SET_API_USER_ID] (state, userId) {
+    state.apiUserId = userId
   },
   [PROFILE_REQUEST] (state) {
     state.isUpdating = true
@@ -349,6 +355,16 @@ const actions = {
   logout ({ commit }, returnTo = null) {
     commit(LOGOUT)
     auth.logout(returnTo)
+  },
+
+  /**
+   * Set the API userId for use in API queries
+   *
+   * @param {Function} options.commit Function to commit mutations
+   * @param {String}   userId         The user's userId from the API (feathers)
+   */
+  setApiUserId ({ commit }, userId) {
+    commit(SET_API_USER_ID, userId)
   },
 
   /**

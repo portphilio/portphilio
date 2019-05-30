@@ -38,6 +38,23 @@
           let to
           // if login was successful
           if (store.getters['auth/isAuthenticated']) {
+            // get the API userId
+            store.dispatch('api/call', {
+              service: 'users',
+              method: 'find',
+              params: {
+                params: {
+                  query: {
+                    user_id: store.state.auth.user_id
+                  }
+                }
+              }
+            }).then(
+              users => {
+                // then save it in the store
+                store.dispatch('auth/setApiUserId', users.data[0]._id)
+              }
+            )
             // get the original destination (or dashboard page)
             to = store.getters['common/destination'] || '/dashboard'
           } else {

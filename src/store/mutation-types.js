@@ -19,6 +19,7 @@ export const LOGOUT = 'LOGOUT'
 /**
  * User profile management
  */
+export const SET_API_USER_ID = 'SET_API_USER_ID'
 export const PROFILE_REQUEST = 'PROFILE_REQUEST'
 export const PROFILE_SUCCESS = 'PROFILE_SUCCESS'
 export const PROFILE_FAILURE = 'PROFILE_FAILURE'

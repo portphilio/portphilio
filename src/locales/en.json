@@ -29,8 +29,20 @@
       "column-labels": {
         "name": "Name",
         "status": "Current Status",
-        "created_at": "Created",
-        "updated_at": "Updated"
+        "createdAt": "Created",
+        "updatedAt": "Updated"
+      },
+      "no-data-text": "There are no artifacts to display. Please add one using the 'New Artifact' button above.",
+      "no-results-text": "No artifacts match your search.",
+      "items-per-page-text": "Artifacts per page",
+      "items-per-page-all-text": "All",
+      "statuses": {
+        "idea": "Idea",
+        "draft": "Draft",
+        "work-in-progress": "Work-In-Progress",
+        "complete": "Complete",
+        "will-not-complete": "Will-Not-Complete",
+        "hint": "Filter Artifacts by Status"
       }
     },
     "dashboard": {
@@ -52,6 +64,7 @@
       "status": "Artifact Status",
       "status-hint": "Is it done yet? It's okay if it's only an idea or a work-in-progress. You can save it and finish it later.",
       "link": "Link to Artifact",
+      "link-hint": "Paste a URL to your artifact. You can choose a file from Google Drive or GitHub using the buttons below.",
       "narrative": "Narrative",
       "narrative-hint": "What story does this artifact tell about you? See the 'Guidance' section above for ideas about what to write here.",
       "tags": "Keywords/Tags",

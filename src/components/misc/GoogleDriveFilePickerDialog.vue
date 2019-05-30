@@ -68,6 +68,7 @@
         // there are a number of possible actions, e.g. 'loaded', 'canceled', etc.
         if (result.action === 'picked') {
           // result.docs contains an array of selected files
+          this.$emit('google-file-picked', result.docs[0].embedUrl)
           // check to make sure artifact files are publicly accessible
           this.drive.permissions.list({
             fileId: result.docs[0].id,
@@ -77,7 +78,11 @@
               // look for permissions with type === anyone
               const publicPerms = res.data.permissions.filter(perm => perm.type === 'anyone')
               if (publicPerms.length === 0) {
-                // the artifact is NOT publicly available
+                // uh-oh! the artifact is NOT publicly available
+                this.$emit('google-file-accessible', false)
+              } else {
+                // ok! the artifact is publicly available
+                this.$emit('google-file-accessible', true)
               }
             }
           )

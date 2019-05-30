@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import { store, ability } from '@/store'
-import Home from './views/Home.vue'
+import TheHomePage from '@/components/pages/TheHomePage'
 import TheDashboardPage from '@/components/pages/TheDashboardPage'
 import TheHandleAuthPage from '@/components/pages/TheHandleAuthPage'
 
@@ -14,7 +14,7 @@ const router = new Router({
     {
       path: '/',
       name: 'home',
-      component: Home,
+      component: TheHomePage,
       meta: {
         icon: 'mdi-home'
       }
@@ -22,7 +22,7 @@ const router = new Router({
     {
       path: '/about',
       name: 'about',
-      component: () => import(/* webpackChunkName: "about" */ './views/About.vue'),
+      component: () => import(/* webpackChunkName: "about" */ '@/components/pages/TheAboutPage.vue'),
       meta: {
         icon: 'mdi-information'
       }

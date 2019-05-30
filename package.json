@@ -15,7 +15,7 @@
     "@feathersjs/client": "^3.7.8",
     "auth0-js": "^9.10.4",
     "axios": "^0.18.0",
-    "core-js": "^2.6.8",
+    "core-js": "^2.6.9",
     "date-fns": "^1.30.1",
     "debounce": "^1.2.0",
     "deepmerge": "^3.2.0",
@@ -26,7 +26,7 @@
     "vue-analytics": "^5.16.4",
     "vue-i18n": "^8.11.2",
     "vue-router": "^3.0.6",
-    "vuetify": "^2.0.0-alpha.20",
+    "vuetify": "^2.0.0-beta.0",
     "vuex": "^3.1.1",
     "vuex-persist": "github:morphatic/vuex-persist"
   },

@@ -53,10 +53,14 @@
                 />
               </v-flex>
               <v-flex xs12>
-                <span class="grey--text text--darken-1">
-                  {{ $t('pages.new-artifact.link') }}
-                </span>
-                <google-drive />
+                <v-text-field
+                  v-model="theArtifact.uri"
+                  :hint="$t('pages.new-artifact.link-hint')"
+                  :label="$t('pages.new-artifact.link')"
+                />
+                <google-drive
+                  @google-file-picked="theArtifact.uri = $event"
+                />
               </v-flex>
               <v-flex xs12>
                 <v-textarea
@@ -135,6 +139,7 @@
         close: mdiCloseCircle,
         save: mdiContentSave
       },
+      isPublic: null,
       snackbar: {
         visible: false,
         color: '',
@@ -160,35 +165,40 @@
       valid: true
     }),
     mounted () {
-      this.theArtifact.userId = this.$store.state.auth.user_id
+      // set the userId for the artifact
+      this.theArtifact.userId = this.$store.state.auth.apiUserId
+      // listen for events
     },
     methods: {
       /**
-       * Saves or updates the artifact. Consider figuring out how
+       * Creates or updates the artifact. Consider figuring out how
        * to save multiple versions, so there is a revision history
        * for each artifact in the database.
        */
       save () {
-        const method = this.theArtifact._id ? 'update' : 'save'
+        const method = this.theArtifact._id ? 'update' : 'create'
         const params = this.theArtifact._id ? { id: this.theArtifact._id } : {}
         params.data = this.theArtifact
+        console.log(params)
         this.$store.dispatch('api/call', {
           method,
           service: 'artifacts',
           params
         }).then(
           function (artifact) {
+            console.log(artifact)
             this.theArtifact._id = artifact._id
             this.snackbar.color = 'success'
             this.snackbar.text = this.$t('pages.new-artifact.save-success')
             this.snackbar.visible = true
-          }
+          }.bind(this)
         ).catch(
           function (err) {
+            console.log(err)
             this.snackbar.color = 'error'
-            this.snackbar.text = this.$t('pages.new-artifact.save-success') + err.message
+            this.snackbar.text = this.$t('pages.new-artifact.save-failure') + err.message
             this.snackbar.visible = true
-          }
+          }.bind(this)
         )
       },
       updateNotes (notes) {
