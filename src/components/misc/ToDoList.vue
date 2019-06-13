@@ -2,13 +2,13 @@
   <v-list>
     <v-list-item
       v-for="note in notes"
-      :key="note.id"
+      :key="note._id"
       class="todo-item"
     >
       <v-list-item-avatar>
         <v-icon
           :color="note.done ? 'success' : 'grey lighten-2'"
-          @click="toggleNoteDone(note.id)"
+          @click="toggleNoteDone(note._id)"
         >
           {{ note.done ? icons.complete : icons.incomplete }}
         </v-icon>
@@ -19,15 +19,15 @@
         <v-text-field
           :value="note.note"
           :disabled="note.done"
-          @blur="editNote(note.id)"
-          @keyup.enter="editNote(note.id)"
+          @blur="editNote(note._id)"
+          @keyup.enter="editNote(note._id)"
         />
       </v-list-item-content>
       <v-list-item-action>
         <v-btn
           icon
           class="todo--delete-button"
-          @click="deleteNote(note.id)"
+          @click="deleteNote(note._id)"
         >
           <v-icon color="error">
             {{ icons.delete }}
@@ -67,29 +67,42 @@
           delete: mdiClose
         },
         newNote: '',
-        notes: this.items
+        notes: []
+      }
+    },
+    watch: {
+      items (newNotes) {
+        this.notes = newNotes
       }
     },
     methods: {
       addNote () {
         const note = this.newNote && this.newNote.trim()
         if (!note) return
-        this.notes.push({ id: this.notes.length, note, done: false })
+        this.notes.push({ _id: this.notes.length, note, done: false })
         this.newNote = ''
         this.$emit('changed', this.notes)
       },
       editNote (noteId) {
-        delete this.notes[noteId].editable
+        const index = this.notes.findIndex(n => n._id === noteId)
+        delete this.notes[index].editable
         this.$emit('changed', this.notes)
       },
       deleteNote (noteId) {
         // remove the note to be deleted, then re-index the list
-        this.notes.splice(noteId, 1)
-        this.notes = this.notes.map((n, i) => { n.id = i; return n })
+        const index = this.notes.findIndex(n => n._id === noteId)
+        this.notes.splice(index, 1)
+        this.notes = this.notes.map((n, i) => {
+          if (Number.isInteger(+n._id)) {
+            n._id = i
+          }
+          return n
+        })
         this.$emit('changed', this.notes)
       },
       toggleNoteDone (noteId) {
-        this.notes[noteId].done = !this.notes[noteId].done
+        const index = this.notes.findIndex(n => n._id === noteId)
+        this.notes[index].done = !this.notes[index].done
         this.$emit('changed', this.notes)
       }
     }

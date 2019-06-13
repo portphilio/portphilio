@@ -132,7 +132,7 @@
   import GoogleDriveFilePickerDialog from '@/components/misc/GoogleDriveFilePickerDialog'
   import ToDoList from '@/components/misc/ToDoList'
   export default {
-    name: 'TheNewArtifactPage',
+    name: 'TheEditArtifactPage',
     components: {
       'google-drive': GoogleDriveFilePickerDialog,
       ToDoList
@@ -199,15 +199,20 @@
       save () {
         const method = this.theArtifact._id ? 'update' : 'create'
         const params = this.theArtifact._id ? { id: this.theArtifact._id } : {}
+        // clean the _id field for any new notes
+        this.theArtifact.notes = this.theArtifact.notes.map(n => {
+          if (Number.isInteger(+n._id)) {
+            delete n._id
+          }
+          return n
+        })
         params.data = this.theArtifact
-        console.log(params)
         this.$store.dispatch('api/call', {
           method,
           service: 'artifacts',
           params
         }).then(
           function (artifact) {
-            console.log(artifact)
             this.theArtifact._id = artifact._id
             this.snackbar.color = 'success'
             this.snackbar.text = this.$t('pages.new-artifact.save-success')
@@ -215,7 +220,6 @@
           }.bind(this)
         ).catch(
           function (err) {
-            console.log(err)
             this.snackbar.color = 'error'
             this.snackbar.text = this.$t('pages.new-artifact.save-failure') + err.message
             this.snackbar.visible = true

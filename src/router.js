@@ -36,8 +36,8 @@ const router = new Router({
       }
     },
     {
-      path: '/artifacts/new',
-      name: 'new artifact',
+      path: '/artifacts/:id',
+      name: 'add/edit artifact',
       component: () => import(/* webpackChunkName: "artifacts" */ '@/components/pages/artifacts/TheEditArtifactPage.vue'),
       meta: {
         icon: 'mdi-file-document-box-multiple'
