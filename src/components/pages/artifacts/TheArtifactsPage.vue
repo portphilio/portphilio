@@ -46,12 +46,12 @@
             :value="selected"
           >
             <template v-slot:item.name="{ item }">
-              <a
-                :href="`/artifacts/${item._id}`"
+              <router-link
+                :to="`/artifacts/${item._id}`"
                 class="td-content"
               >
                 {{ item.name }}
-              </a>
+              </router-link>
             </template>
             <template v-slot:item.status="{ item }">
               <span class="text-capitalize td-content">{{ item.status }}</span>

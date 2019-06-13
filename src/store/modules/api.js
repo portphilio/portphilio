@@ -2,11 +2,15 @@
  * A store module representing the backend API
  */
 
-import { api } from '@/services/api'
-import { SET_API, API_REQUEST, API_SUCCESS, API_FAILURE } from '@/store/mutation-types'
+import { appApi } from '@/services/api'
+import { SET_API_TOKEN, API_REQUEST, API_SUCCESS, API_FAILURE } from '@/store/mutation-types'
+
+// local instantiation of our feathers API that gets
+// (re)initialized whenever the token is set
+let api
 
 const initialState = {
-  api: null,
+  token: null,
   currentRequest: {},
   error: null
 }
@@ -14,8 +18,9 @@ const initialState = {
 const state = Object.assign({}, initialState)
 
 const mutations = {
-  [SET_API] (state, api) {
-    state.api = api
+  [SET_API_TOKEN] (state, token) {
+    state.token = token
+    api = token ? appApi(token) : null
   },
   [API_REQUEST] (state, { method, service, params }) {
     state.error = null
@@ -33,8 +38,8 @@ const mutations = {
 }
 
 const actions = {
-  setApi ({ commit }, api) {
-    commit(SET_API, api)
+  setToken ({ commit }, token) {
+    commit(SET_API_TOKEN, token)
   },
   async call ({ commit, state, dispatch }, { method, service, params }) {
     // let the store know we're beginning a request
@@ -42,7 +47,7 @@ const actions = {
     // make sure we are authenticated
     await dispatch('auth/enticate', null, { root: true })
     // make our api call and handle the result
-    return state.api.service(service)[method](...Object.values(params)).then(
+    return api.service(service)[method](...Object.values(params)).then(
       res => {
         commit(API_SUCCESS)
         return res
@@ -76,8 +81,8 @@ export const setAPIToken = store => {
     ].includes(mutation.type)) {
       // get the new access token from auth state
       const token = store.state.auth.accessToken
-      // (re)initialize the api or set it to null
-      store.dispatch('api/setApi', token ? api(token) : null)
+      // save it in the store
+      store.dispatch('api/setToken', token)
     }
   })
 }

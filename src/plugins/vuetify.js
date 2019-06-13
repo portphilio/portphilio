@@ -1,7 +1,6 @@
 import Vue from 'vue'
 import Vuetify from 'vuetify/lib'
 import colors from 'vuetify/es5/util/colors'
-import { mdiPageFirst, mdiPageLast } from '@mdi/js'
 
 Vue.use(Vuetify)
 
@@ -23,10 +22,6 @@ export default new Vuetify({
     }
   },
   icons: {
-    iconfont: 'mdiSvg',
-    values: {
-      first: mdiPageFirst,
-      last: mdiPageLast
-    }
+    iconfont: 'mdiSvg'
   }
 })

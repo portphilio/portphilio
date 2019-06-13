@@ -14,14 +14,28 @@ export const ability = appAbility
 const debug = process.env.NODE_ENV !== 'production'
 
 const local = new VuexPersistence({
-  key: 'sc_vuex',
+  key: 'portphilio_vuex',
+  asyncStorage: true,
   storage: localforage,
-  strictMode: debug,
+  strictMode: true, // always set to true to use RESTORE_MUTATION
   modules: [
     'auth',
     'common'
   ]
 })
+
+// plugin to handle when store has been restored
+// const handleRestore = () => {
+//   return store => {
+//     store.subscribe(mutation => {
+//       if (mutation.type === 'RESTORE_MUTATION') {
+//         // restore @casl/ability settings
+//         console.log('restored', ability, store)
+//         ability.update(store.state.auth.abilities)
+//       }
+//     })
+//   }
+// }
 
 export const store = new Vuex.Store({
   strict: debug,

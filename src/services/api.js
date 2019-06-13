@@ -3,11 +3,11 @@ import axios from 'axios'
 
 const app = feathers()
 const rc = feathers.rest(process.env.VUE_APP_API_URL)
+app.configure(rc.axios(axios))
 
-export const api = token => {
+export const appApi = token => {
   // configure axios to ALWAYS send the specified Authorization header
-  axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
-  app.configure(rc.axios(axios))
+  app.rest.defaults.headers.common['Authorization'] = `Bearer ${token}`
   return app
 }
 

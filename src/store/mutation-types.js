@@ -30,7 +30,7 @@ export const PROFILE_UPDATE_FAILURE = 'PROFILE_UPDATE_FAILURE'
 /**
  * User profile management
  */
-export const SET_API = 'SET_API'
+export const SET_API_TOKEN = 'SET_API_TOKEN'
 export const API_REQUEST = 'API_REQUEST'
 export const API_SUCCESS = 'API_SUCCESS'
 export const API_FAILURE = 'API_FAILURE'

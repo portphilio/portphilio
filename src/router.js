@@ -38,7 +38,7 @@ const router = new Router({
     {
       path: '/artifacts/new',
       name: 'new artifact',
-      component: () => import(/* webpackChunkName: "artifacts" */ '@/components/pages/artifacts/TheNewArtifactPage.vue'),
+      component: () => import(/* webpackChunkName: "artifacts" */ '@/components/pages/artifacts/TheEditArtifactPage.vue'),
       meta: {
         icon: 'mdi-file-document-box-multiple'
       }
@@ -59,16 +59,14 @@ const router = new Router({
   ]
 })
 
-const waitForStorageToBeReady = (to, from, next) => {
-  if (!store._vm.$root.$data['vuexPersistStateRestored']) {
-    store._vm.$root.$on('vuexPersistStateRestored', () => {
-      // restore abilities on page reload
-      ability.update(store.state.auth.abilities)
-      next()
-    })
-  } else {
-    next()
+let previouslyRestored = false
+const waitForStorageToBeReady = async (to, from, next) => {
+  await store.restored
+  if (!previouslyRestored) {
+    ability.update(store.state.auth.abilities)
+    previouslyRestored = true
   }
+  next()
 }
 router.beforeEach(waitForStorageToBeReady)
 
