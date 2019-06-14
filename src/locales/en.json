@@ -1,6 +1,7 @@
 {
   "my-profile": "My Profile",
   "logout": "Logout",
+  "cancel": "Cancel",
   "components": {
     "to-do-list": {
       "new-note": "New Note",
@@ -10,6 +11,13 @@
   "dialogs": {
     "google-drive": {
       "button": "Google Drive"
+    },
+    "delete-artifact": {
+      "button": "Delete Artifact",
+      "hint": "Enter the full, case-senstive name of the artifact",
+      "instructions": "This artifact will be deleted <strong>PERMANENTLY</strong>. Are you sure you want to do this? If so, please type its full name (case-sensitive) into the text field below:",
+      "name": "Type Artifact Name",
+      "title": "Are you sure?"
     }
   },
   "menus": {
@@ -26,11 +34,13 @@
       "title": "Artifacts",
       "search": "Search",
       "add-new": "New Artifact",
+      "artifact-removed": "\"{name}\" was removed successfully.",
       "column-labels": {
         "name": "Name",
         "status": "Current Status",
         "createdAt": "Created",
-        "updatedAt": "Updated"
+        "updatedAt": "Updated",
+        "actions": "Actions"
       },
       "no-data-text": "There are no artifacts to display. Please add one using the 'New Artifact' button above.",
       "no-results-text": "No artifacts match your search.",

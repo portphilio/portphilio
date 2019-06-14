@@ -143,4 +143,8 @@
 
 .v-list--dense .v-list-item .v-list-item__content
   padding: 10px 0 6px
+
+.v-content
+  a
+    color: var(--v-primary-darken3)
 </style>
