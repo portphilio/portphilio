@@ -1,6 +1,6 @@
 {
-  "name": "portphilio",
-  "short_name": "portphilio",
+  "name": "Portphilio",
+  "short_name": "Portphilio",
   "icons": [
     {
       "src": "./img/icons/android-chrome-192x192.png",
@@ -13,8 +13,8 @@
       "type": "image/png"
     }
   ],
-  "start_url": "./index.html",
+  "start_url": "https://portphilio.test:8080/index.html",
   "display": "standalone",
   "background_color": "#f06292",
-  "theme_color": "#4DBA87"
+  "theme_color": "#f06292"
 }

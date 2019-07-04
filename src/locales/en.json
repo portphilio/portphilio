@@ -20,12 +20,15 @@
       "title": "Are you sure?"
     }
   },
+  "install": "Add to Home Screen",
   "menus": {
     "account": {
       "my-profile": "My Profile",
       "logout": "Logout"
     }
   },
+  "offline": "Offline",
+  "online": "Online",
   "pages": {
     "about": {
       "title": "About"
@@ -80,6 +83,7 @@
       "tags": "Keywords/Tags",
       "tags-hint": "A good rule-of-thumb is that each artifact should have 3-5 key workd or phrases to describe and categorize it. Hit [enter] after typing each tag.",
       "save": "Save",
+      "save-and-close": "Save and Close",
       "save-success": "The artifact was saved successfully!",
       "save-failure": "There was a problem saving the artifact."
     }

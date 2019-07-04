@@ -25,47 +25,18 @@
   import router from '@/router'
   export default {
     name: 'TheHandleAuthPage',
-    mounted () {
-      // for some reason, this component gets created
-      // twice when navigating here from Auth0. In that
-      // case, tries to handle the login twice, and the
-      // second time fails. So, we need to check to make
-      // sure we're not already logged in before trying
-      // to handle the login attempt.
-      if (!store.getters['auth/isAuthenticated']) {
+    async mounted () {
+      try {
         // handle the login
-        store.dispatch('auth/handle').then(() => {
-          let to
-          // if login was successful
-          if (store.getters['auth/isAuthenticated']) {
-            // get the API userId
-            store.dispatch('api/call', {
-              service: 'users',
-              method: 'find',
-              params: {
-                params: {
-                  query: {
-                    user_id: store.state.auth.user_id
-                  }
-                }
-              }
-            }).then(
-              users => {
-                // then save it in the store
-                store.dispatch('auth/setApiUserId', users.data[0]._id)
-              }
-            )
-            // get the original destination (or dashboard page)
-            to = store.getters['common/destination'] || '/dashboard'
-          } else {
-            // ruh-roh!
-            const error = store.state.auth.error
-            console.log(error)
-            to = '/'
-          }
-          // redirect to the destination
-          router.replace(to)
-        })
+        await store.dispatch('auth/handle')
+        // load the user's profile
+        await store.dispatch('user/getProfile', store.state.auth.user_id)
+        // get the original destination (if any)
+        const to = store.getters['common/destination'] || '/dashboard'
+        router.replace(to)
+      } catch (err) {
+        console.log('Login error', err, store.state.auth.error)
+        router.replace('/')
       }
     }
   }

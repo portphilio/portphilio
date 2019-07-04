@@ -59,14 +59,15 @@ const router = new Router({
   ]
 })
 
-let previouslyRestored = false
 const waitForStorageToBeReady = async (to, from, next) => {
-  await store.restored
-  if (!previouslyRestored) {
-    ability.update(store.state.auth.abilities)
-    previouslyRestored = true
+  if (!store._vm.$root.$data['storageReady']) {
+    store._vm.$root.$on('storageReady', () => {
+      ability.update(store.state.auth.abilities)
+      next()
+    })
+  } else {
+    next()
   }
-  next()
 }
 router.beforeEach(waitForStorageToBeReady)
 

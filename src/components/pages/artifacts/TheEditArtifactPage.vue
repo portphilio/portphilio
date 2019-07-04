@@ -128,6 +128,7 @@
 </template>
 
 <script>
+  import uuid from 'uuid/v5'
   import { mdiCloseCircle, mdiContentSave } from '@mdi/js'
   import GoogleDriveFilePickerDialog from '@/components/misc/GoogleDriveFilePickerDialog'
   import ToDoList from '@/components/misc/ToDoList'
@@ -172,59 +173,49 @@
     mounted () {
       // are we adding or editing an artifact?
       if (this.$route.params.id === 'new') {
-        // set the userId for the artifact
-        this.theArtifact.userId = this.$store.state.auth.apiUserId
+        // set the userId for the artifact and generate a UUID
+        this.theArtifact.userId = this.$store.state.auth.apiId
+        this.theArtifact.uuid = uuid(process.env.VUE_APP_AUTH0_NAMESPACE, uuid.URL)
         this.title = this.$t('pages.new-artifact.title')
       } else {
         // get the artifact to be edited
-        this.getArtifact(this.$route.params.id)
+        this.theArtifact = this.$store.getters['artifacts/artifact'](this.$route.params.id)
       }
     },
     methods: {
-      async getArtifact (id) {
-        this.loading = true
-        this.theArtifact = await this.$store.dispatch('api/call', {
-          method: 'get',
-          service: 'artifacts',
-          params: { id }
-        })
-        this.title = this.theArtifact.name
-        this.loading = false
-      },
       /**
        * Creates or updates the artifact. Consider figuring out how
        * to save multiple versions, so there is a revision history
        * for each artifact in the database.
        */
       save () {
-        const method = this.theArtifact._id ? 'update' : 'create'
-        const params = this.theArtifact._id ? { id: this.theArtifact._id } : {}
         // clean the _id field for any new notes
         this.theArtifact.notes = this.theArtifact.notes.map(n => {
-          if (Number.isInteger(+n._id)) {
-            delete n._id
-          }
+          if (Number.isInteger(+n._id)) delete n._id
           return n
         })
-        params.data = this.theArtifact
-        this.$store.dispatch('api/call', {
-          method,
-          service: 'artifacts',
-          params
-        }).then(
-          function (artifact) {
-            this.theArtifact._id = artifact._id
-            this.snackbar.color = 'success'
-            this.snackbar.text = this.$t('pages.new-artifact.save-success')
-            this.snackbar.visible = true
-          }.bind(this)
-        ).catch(
-          function (err) {
-            this.snackbar.color = 'error'
-            this.snackbar.text = this.$t('pages.new-artifact.save-failure') + err.message
-            this.snackbar.visible = true
-          }.bind(this)
-        )
+        // set the userId field
+        this.$store.dispatch('artifacts/save', this.theArtifact)
+
+        // params.data = this.theArtifact
+        // this.$store.dispatch('api/call', {
+        //   method,
+        //   service: 'artifacts',
+        //   params
+        // }).then(
+        //   function (artifact) {
+        //     this.theArtifact._id = artifact._id
+        //     this.snackbar.color = 'success'
+        //     this.snackbar.text = this.$t('pages.new-artifact.save-success')
+        //     this.snackbar.visible = true
+        //   }.bind(this)
+        // ).catch(
+        //   function (err) {
+        //     this.snackbar.color = 'error'
+        //     this.snackbar.text = this.$t('pages.new-artifact.save-failure') + err.message
+        //     this.snackbar.visible = true
+        //   }.bind(this)
+        // )
       },
       updateNotes (notes) {
         this.theArtifact.notes = notes

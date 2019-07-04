@@ -4,35 +4,6 @@
     max-width="600"
     @keydown.enter="!unconfirmed && deleteArtifact()"
   >
-    <template v-slot:activator="{ on }">
-      <!-- <v-tooltip
-        v-if="item.email_verified"
-        color="warning black--text"
-        top
-      >
-        <template v-slot:activator="{ on }">
-          <v-icon
-            v-if="!item.email_verified"
-            color="warning"
-            small
-            v-on="on"
-          >
-            {{ icons.alert }}
-          </v-icon>
-        </template>
-        <span>{{ $t('pages.admin.users.email-not-verified') }}</span>
-      </v-tooltip> -->
-      <v-btn
-        color="primary darken-2"
-        icon
-        :title="$t('dialogs.delete-artifact.button')"
-        v-on="on"
-      >
-        <v-icon>
-          {{ icons.trashCan }}
-        </v-icon>
-      </v-btn>
-    </template>
     <v-card>
       <v-card-title
         class="warning lighten-3 warning--text text--darken-4"
@@ -62,7 +33,7 @@
         <p v-html="$t('dialogs.delete-artifact.instructions')" />
         <ul>
           <li class="body-2 pink--text text--darken-4">
-            {{ artifact.name }}
+            {{ theArtifact.name }}
           </li>
         </ul>
         <v-text-field
@@ -111,9 +82,13 @@
   export default {
     name: 'TheDeleteArtifactDialog',
     props: {
-      artifact: {
-        type: Object,
-        default: () => ({})
+      artifactId: {
+        type: String,
+        default: ''
+      },
+      show: {
+        type: Boolean,
+        default: false
       }
     },
     data: () => ({
@@ -123,31 +98,28 @@
         close: mdiClose,
         trashCan: mdiTrashCan
       },
-      showDialog: false
+      showDialog: false,
+      theArtifact: {
+        name: null
+      }
     }),
     computed: {
       unconfirmed () {
-        return this.confirmation !== this.artifact.name
+        return this.confirmation !== this.theArtifact.name
       }
     },
-    // watch: {
-    //   showDialog (showing) {
-    //     console.log(this.$nextTick(function () { return this.$refs.confirm }.bind(this)))
-    //     if (showing) this.$nextTick(this.$refs.confirm.focus)
-    //   }
-    // },
+    watch: {
+      show (open) {
+        this.showDialog = open
+        if (open) {
+          this.theArtifact = this.$store.getters['artifacts/artifact'](this.artifactId)
+          this.title = this.theArtifact.name
+        }
+      }
+    },
     methods: {
       async deleteArtifact () {
-        try {
-          const removed = await this.$store.dispatch('api/call', {
-            method: 'remove',
-            service: 'artifacts',
-            params: { id: this.artifact._id }
-          })
-          this.$emit('remove', removed)
-        } catch (err) {
-          this.$emit('remove', err)
-        }
+        this.$emit('remove', this.theArtifact)
         this.showDialog = false
       }
     }

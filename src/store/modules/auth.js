@@ -3,8 +3,8 @@
  *
  * @module store/auth
  */
-// utility for merging state objects
-import merge from 'deepmerge'
+// for decoding JWTs
+import jws from 'jws'
 
 // mutation types
 import {
@@ -14,15 +14,14 @@ import {
   REFRESH_REQUEST,
   REFRESH_SUCCESS,
   REFRESH_FAILURE,
-  LOGOUT,
-  SET_API_USER_ID,
-  PROFILE_REQUEST,
-  PROFILE_SUCCESS,
-  PROFILE_FAILURE,
-  PROFILE_UPDATE_REQUEST,
-  PROFILE_UPDATE_SUCCESS,
-  PROFILE_UPDATE_FAILURE
+  GOOGLE_TOKEN_REQUEST,
+  GOOGLE_TOKEN_SUCCESS,
+  GOOGLE_TOKEN_FAILURE,
+  LOGOUT
 } from '@/store/mutation-types'
+
+// get access to the api
+import { api } from '@/store'
 
 // factory function to create auth0.WebAuth instance
 import { createAuth } from '@/services/auth0'
@@ -30,15 +29,8 @@ import { createAuth } from '@/services/auth0'
 // works with the appAbility plugin to define user capabilities
 import { defineAbilitiesFor } from '@/store/abilities'
 
-// options that instruct merge to overwrite arrays
-const overwrite = { arrayMerge: (a, b) => b }
-
 // used to specify namespaced scopes for additional auth0 functions
 const ns = process.env.VUE_APP_AUTH0_NAMESPACE
-
-// scopes required to update user_metadata in auth0
-const privs =
-  'read:current_user create:current_user_metadata update:current_user_metadata'
 
 /**
  * A local instance of {@link module:services/auth0}
@@ -49,7 +41,7 @@ const auth = createAuth({
   clientID: process.env.VUE_APP_AUTH0_CLIENT_ID,
   redirectUri: process.env.VUE_APP_AUTH0_REDIRECT_URI,
   audience: process.env.VUE_APP_AUTH0_AUDIENCE,
-  scope: `openid profile email ${ns}roles ${privs}`
+  scope: `openid profile email ${ns}roles ${ns}google ${ns}api_id`
 })
 
 /**
@@ -57,160 +49,75 @@ const auth = createAuth({
  * @see {@link https://openid.net/specs/openid-connect-core-1_0.html#AddressClaim|OpenID Connect Implementer's Guide}
  *
  * @typedef  {Object}  Identity
- * @property {string}  user_id    - May contain multiple lines, e.g. \n
- * @property {string}  provider   - The city
- * @property {string}  connection - The state, province, prefecture, etc.
- * @property {boolean} isSocial   - Zip code
+ * @property {string}  user_id        - The user_id issued by the idP
+ * @property {string}  provider       - The name of the idP, e.g. auth0, google-oauth2, github, etc.
+ * @property {string}  connection     - The type of connection, frequently same as the provider
+ * @property {boolean} isSocial       - Is the provider a 3rd party, e.g. Google, GitHub, etc.
+ * @property {string}  [access_token] - An API access token associated with the idP
+ * @property {number}  [expires_in]   - The number of seconds until the access_token expires
  */
 
 /**
- * OIDC-compliant address type definition
- * @see {@link https://openid.net/specs/openid-connect-core-1_0.html#AddressClaim|OpenID Connect Implementer's Guide}
+ * The Default Auth State
  *
- * @typedef  {Object} Address
- * @property {string} street_address - May contain multiple lines, e.g. \n
- * @property {string} locality       - The city
- * @property {string} region         - The state, province, prefecture, etc.
- * @property {string} postal_code    - Zip code
- * @property {string} country        - 2-letter ISO country code, default: US
- */
-
-/**
- * Information necessary to collect payments from customers using Stripe
- * @see {@link https://stripe.com/docs/saving-cards|Stripe: Saving Cards}
- *
- * @typedef  {Object}  PaymentMethod
- * @property {string}  source   - Unique token used by Stripe to authorize charges
- * @property {string}  email    - Email address associated with Stripe account
- * @property {string}  number   - Last 4 digits of card number, for display on the profile
- * @property {string}  type     - Card type, for displaying an icon
- * @property {Address} address  - OIDC-compliant billing address
- * @property {boolean} isActive - Is this the payment method we're currently using?
- */
-
-/**
- * The Default User State
- *
- * This object defines all possible properties that can
- * belong to a standard user that will primarily be
- * stored on Auth0's servers.
+ * This object defines all properties that concern the login
+ * status of the user, as well as permissions and access to external
+ * resources like the app API, Google API, etc. All non-derived values
+ * should be stored on and retrieved from Auth0's servers. A great
+ * deal of the app state relies on the values of these variables.
  *
  * @namespace
  * @private
+ * @property {object}   abilities        - An object controlling what actions this user is capable of performing in this app
+ * @property {string}   accessToken      - The Auth0 accessToken needed to make API calls
+ * @property {string}   apiId            - The _id associated with this user in the backend API (feathers)
+ * @property {object}   error            - An object describing why actions for this module may have failed
+ * @property {number}   expiresAt        - A unix timestamp indicating when the {@link initialState.accessToken} expires
+ * @property {string}   googleToken      - The Google API access_token associated with this user
+ * @property {number}   googleExpiry     - A timestamp indicating when the Google API access_token will expire
+ * @property {string}   idToken          - A {@link https://jwt.io/|JWT} containing the user profile
  * @property {boolean}  isAuthenticating - Is the user currently in the login process?
  * @property {boolean}  isUpdating       - Are we currently updating the user metadata?
- * @property {string}   accessToken      - The Auth0 accessToken needed to make API calls
- * @property {string}   idToken          - A {@link https://jwt.io/|JWT} containing the user profile
- * @property {number}   expiresAt        - A unix timestamp indicating when the {@link initialState.accessToken} expires
- * @property {object}   error            - An object describing why actions for this module may have failed
- * @property {string}   user_id          - The unique Auth0 user id used for retrieving/updating user metadata
- * @property {string}   apiUserId        - The userId associated with this user in the backend API (feathers)
+ * @property {number}   issuedAt         - A unix timestamp indicating when the {@link initialState.accessToken} was issued
  * @property {string[]} roles            - An array of strings indicating roles held by this user in this app
- * @property {object}   abilities        - An object controlling what actions this user is capable of performing in this app
+ * @property {string}   user_id          - The unique Auth0 user id used for retrieving/updating user metadata
  */
 const initialState = {
+  abilities: null,
+  accessToken: null,
+  apiId: null,
+  error: null,
+  expiresAt: null,
+  googleToken: null,
+  googleExpiry: null,
+  idToken: null,
   isAuthenticating: false,
   isUpdating: false,
-  accessToken: null,
-  idToken: null,
-  expiresAt: null,
-  error: null,
-  user_id: null,
-  apiUserId: null,
+  issuedAt: null,
   roles: [],
-  abilities: null,
-  /**
-   * Auth0 User object, not generally updateable. Saved "as is" when received from Auth0.
-   * @see {@link https://auth0.com/docs/users/references/user-profile-structure|Auth0 User Profile Structure}
-   *
-   * @inner
-   * @property {boolean}    blocked        - Has the user been blocked?
-   * @property {string}     created_at     - ISO 8601 datetime when user was created
-   * @property {string}     email          - Unique email associated with Auth0 identity
-   * @property {boolean}    email_verified - Has the email been verified by the user?
-   * @property {string}     family_name    - Last name: can only be set via the {@link https://auth0.com/docs/api/management/v2|Auth0 Management API}
-   * @property {string}     given_name     - First name: can only be set via the {@link https://auth0.com/docs/api/management/v2|Auth0 Management API}
-   * @property {Identity[]} identities     - List of identities (Auth0, Google) registered for this user
-   * @property {string}     last_ip        - Last IP address from which the user logged in
-   * @property {string}     last_login     - ISO 8601 datetime at which the user last logged in
-   * @property {number}     logins_count   - Total number of times a user has logged in
-   * @property {string}     name           - Email associated with Auth0 identity or actual "first last" if they signed up with Google @see {@link initialState.user.email}
-   * @property {string}     nickname       - Extracted from {@link initialState.user.email} overridden by {@link initialState.user_metadata.nickname}
-   * @property {string}     phone_number   - Phone number: only used for SMS connections
-   * @property {boolean}    phone_verified - Has the phone number been verified?
-   * @property {string}     picture        - URL to gravatar or placeholder with user's initials overridden by {@link initialState.user_metadata.picture}
-   * @property {string}     updated_at     - ISO 8601 datetime when user was updated
-   * @property {string}     user_id        - Unique ID used to identify the user within Auth0
-   * @property {string}     username       - Unique username
-   */
-  user: {
-    blocked: null,
-    created_at: null,
-    email: null,
-    email_verified: null,
-    family_name: null,
-    given_name: null,
-    identities: [],
-    last_ip: null,
-    last_login: null,
-    logins_count: null,
-    name: null,
-    nickname: null,
-    phone_number: null,
-    phone_verified: null,
-    picture: null,
-    updated_at: null,
-    user_id: null,
-    username: null,
-    app_metadata: {},
-    /**
-     * User Profile. First 10 fields comprise OIDC-compliance.
-     *
-     * @see {@link https://openid.net/specs/openid-connect-basic-1_0.html|OpenID Connect Implementer's Guide}
-     *
-     * @inner
-     * @property {string}          [title]         - Mr., Ms., Mx., Dr. etc.
-     * @property {string}          given_name      - First name
-     * @property {string}          [nickname]      - What the user prefers to be called
-     * @property {string}          [middle_name]   - Middle name or initial
-     * @property {string}          family_name     - Last name
-     * @property {string}          [picture]       - URL or file path to profile picture/avatar
-     * @property {string}          [usage]         - How the user plans to use QZUKU
-     * @property {string}          [discovery]     - How they learned about QZUKU
-     * @property {string}          [referredBy]    - From whom they learned about QZUKU (for referral program)
-     * @property {boolean}         profileComplete - Has the user completed the user profile?
-     * @property {PaymentMethod[]} paymentMethods  - Information necessary to collect payments from customers using Stripe
-     */
-    user_metadata: {
-      title: null,
-      given_name: null,
-      nickname: null,
-      middle_name: null,
-      family_name: null,
-      picture: null,
-      usage: null,
-      discovery: null,
-      referredBy: null,
-      profileComplete: false,
-      paymentMethods: []
-    }
-  }
+  user_id: null
 }
 
 // initialize module state
-const state = Object.assign({}, initialState)
+const state = { ...initialState }
 
 const mutations = {
   [LOGIN_REQUEST] (state) {
     state.isAuthenticating = true
   },
   [LOGIN_SUCCESS] (state, { accessToken, idToken, idTokenPayload }) {
-    state.accessToken = accessToken
-    state.idToken = idToken
-    state.expiresAt = idTokenPayload.exp * 1000
-    state.user_id = idTokenPayload.sub
+    const accessTokenPayload = jws.decode(accessToken).payload
     state.roles = idTokenPayload[ns + 'roles'] || []
     state.abilities = defineAbilitiesFor(state.roles)
+    state.accessToken = accessToken
+    state.apiId = idTokenPayload[ns + 'api_id'] || null
+    state.error = null
+    state.expiresAt = accessTokenPayload.exp * 1000
+    state.googleToken = idTokenPayload[ns + 'google'] || null
+    state.googleExpiry = (idTokenPayload.iat + 3600) * 1000 // one hour after the Auth0 token was issued
+    state.idToken = idToken
+    state.issuedAt = accessTokenPayload.iat * 1000
+    state.user_id = idTokenPayload.sub
     state.isAuthenticating = false
   },
   [LOGIN_FAILURE] (state, err) {
@@ -220,59 +127,36 @@ const mutations = {
     state.isAuthenticating = true
   },
   [REFRESH_SUCCESS] (state, { accessToken, idTokenPayload }) {
+    const accessTokenPayload = jws.decode(accessToken).payload
     state.accessToken = accessToken
-    state.expiresAt = idTokenPayload.exp * 1000
+    state.error = null
+    state.expiresAt = accessTokenPayload.exp * 1000
     state.isAuthenticating = false
   },
   [REFRESH_FAILURE] (state, err) {
     Object.assign(state, initialState, { error: err })
   },
+  [GOOGLE_TOKEN_REQUEST] (state) {
+    state.isAuthenticating = true
+  },
+  [GOOGLE_TOKEN_SUCCESS] (state, { accessToken, expiresAt } = {}) {
+    // update if new values passed
+    if (accessToken && expiresAt) {
+      state.googleToken = accessToken
+      state.googleExpiry = expiresAt * 1000
+    }
+    state.error = null
+    state.isAuthenticating = false
+  },
+  [GOOGLE_TOKEN_FAILURE] (state, err) {
+    console.error(err)
+    state.googleToken = null
+    state.googleExpiry = null
+    state.error = err.message
+    state.isAuthenticating = false
+  },
   [LOGOUT] (state) {
     Object.assign(state, initialState)
-  },
-  [SET_API_USER_ID] (state, userId) {
-    state.apiUserId = userId
-  },
-  [PROFILE_REQUEST] (state) {
-    state.isUpdating = true
-  },
-  // TODO: Determine if we've chosen the correct merge strategy.
-  // If there are already values in the state that differ from
-  // what was retrieved from Auth0, perhaps we should ask the user
-  // which one should take precedence? Need to think about this.
-  [PROFILE_SUCCESS] (state, user) {
-    // merge everything together; overwrite arrays
-    state.user = merge.all([
-      initialState.user,
-      state.user,
-      user
-    ], overwrite)
-
-    // OK! We're done
-    state.isUpdating = false
-  },
-  [PROFILE_FAILURE] (state, err) {
-    state.isUpdating = false
-    state.error = err
-    // should we update state.user here?
-  },
-  [PROFILE_UPDATE_REQUEST] (state) {
-    state.isUpdating = true
-  },
-  [PROFILE_UPDATE_SUCCESS] (state, user) {
-    // merge everything together; overwrite arrays
-    state.user = merge.all([
-      initialState.user,
-      state.user,
-      user
-    ], overwrite)
-
-    // OK! We're done
-    state.isUpdating = false
-  },
-  [PROFILE_UPDATE_FAILURE] (state, err) {
-    state.isUpdating = false
-    state.error = err
   }
 }
 
@@ -307,7 +191,7 @@ const actions = {
    */
   login ({ commit }) {
     commit(LOGIN_REQUEST)
-    auth.login()
+    auth.login({ api_url: process.env.VUE_APP_API_URL })
   },
 
   /**
@@ -319,12 +203,8 @@ const actions = {
    */
   handle ({ commit, dispatch }) {
     return auth.handle().then(
-      res => {
-        // login completed sucessfully
-        commit(LOGIN_SUCCESS, res)
-        // request user_metadata
-        return dispatch('getUserMeta')
-      },
+      // login completed successfully
+      res => commit(LOGIN_SUCCESS, res),
       // login failed :(
       err => commit(LOGIN_FAILURE, err)
     )
@@ -347,77 +227,37 @@ const actions = {
       )
   },
 
+  async getGoogleToken ({ state, commit, dispatch }) {
+    commit(GOOGLE_TOKEN_REQUEST)
+    const now = new Date().getTime()
+    // already have an unexpired token?
+    if (state.googleToken && state.googleExpiry && now < state.googleExpiry - 30000) {
+      commit(GOOGLE_TOKEN_SUCCESS)
+    } else {
+      await dispatch('enticate')
+      return api.service('tokens')
+        .update(state.user_id, {})
+        .then(
+          token => commit(GOOGLE_TOKEN_SUCCESS, token),
+          error => commit(GOOGLE_TOKEN_FAILURE, error)
+        )
+    }
+  },
+
   /**
    * Log the user out. Returns them to the login screen.
    *
    * @param {Function} options.commit Function to commit mutations
    */
-  logout ({ commit }, returnTo = null) {
+  logout ({ commit, dispatch }, returnTo = null) {
     commit(LOGOUT)
+    dispatch('user/clearProfile', null, { root: true })
     auth.logout(returnTo)
-  },
-
-  /**
-   * Set the API userId for use in API queries
-   *
-   * @param {Function} options.commit Function to commit mutations
-   * @param {String}   userId         The user's userId from the API (feathers)
-   */
-  setApiUserId ({ commit }, userId) {
-    commit(SET_API_USER_ID, userId)
-  },
-
-  /**
-   * Get the user_metadata from Auth0 for the currently logged-in user
-   *
-   * @param {Function} options.commit Function to commit mutations
-   * @param {Object}   options.state  The auth state of the user
-   */
-  getUserMeta ({ commit, state }) {
-    commit(PROFILE_REQUEST)
-    return auth
-      .getUserMeta(state.accessToken, state.user_id)
-      .then(
-        res => commit(PROFILE_SUCCESS, res),
-        err => commit(PROFILE_FAILURE, err)
-      )
-  },
-
-  /**
-   * Updates the user_metadata in the Auth0 database.
-   *
-   * @param {Function} options.commit Function to commit mutations
-   * @param {Function} options.state  The auth state of the user
-   * @param {Object}   userMeta       The user_metadata to be updated
-   */
-  updateUserMeta ({ commit, state }, userMeta) {
-    commit(PROFILE_UPDATE_REQUEST)
-    return auth
-      .updateUserMeta(state.user_id, userMeta)
-      .then(
-        usr => commit(PROFILE_UPDATE_SUCCESS, usr),
-        err => commit(PROFILE_UPDATE_FAILURE, err)
-      )
   }
 }
 
 const getters = {
-  isAuthenticated: state =>
-    state.expiresAt && new Date().getTime() < state.expiresAt,
-  isVerified: state => !!state.user.email_verified,
-  profileComplete: state => !!(state.user.user_metadata || {}).profileComplete,
-  profile: state => ({
-    ...state.user.user_metadata,
-    billingAddress: state.billingAddress,
-    shippingAddress: state.shippingAddress,
-    customer: state.customer
-  }),
-  avatar: state => state.user.user_metadata.picture || state.user.picture,
-  name: state => {
-    const gn = state.user.user_metadata.nickname || state.user.user_metadata.given_name || state.user.given_name
-    const fn = state.user.user_metadata.family_name || state.user.family_name
-    return gn && fn ? `${gn} ${fn}` : ''
-  }
+  isAuthenticated: state => state.expiresAt && new Date().getTime() < state.expiresAt
 }
 
 /**

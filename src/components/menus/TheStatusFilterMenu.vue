@@ -62,11 +62,6 @@
           { value: 'will-not-complete', text: this.$t('pages.artifacts.statuses.will-not-complete') }
         ]
       }
-    },
-    watch: {
-      statusFilter (vals) {
-        console.log(this.statusFilter, vals)
-      }
     }
   }
 </script>

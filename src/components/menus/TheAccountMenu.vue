@@ -11,7 +11,7 @@
         v-on="on"
       >
         <v-avatar size="38">
-          <img :src="$store.getters['auth/avatar']">
+          <img :src="avatar">
         </v-avatar>
         <v-icon>{{ icons.dropdown }}</v-icon>
       </v-btn>
@@ -55,11 +55,14 @@
         logout: mdiExitRun
       }
     }),
+    computed: {
+      avatar () {
+        return this.$store.state.user.picture
+      }
+    },
     methods: {
       logout () {
-        this.$store.dispatch('auth/logout', process.env.VUE_APP_AUTH0_LOGOUT_URI).then(function () {
-          this.$router.push('/')
-        })
+        this.$store.dispatch('auth/logout', process.env.VUE_APP_AUTH0_LOGOUT_URI)
       }
     }
   }

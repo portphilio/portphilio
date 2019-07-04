@@ -6,40 +6,84 @@
       clipped
       :mini-variant="mini"
     >
-      <v-list>
-        <can I="update" a="Artifact">
+      <v-layout column fill-height>
+        <v-list>
+          <can I="update" a="Artifact">
+            <a-menu-item
+              to="/dashboard"
+              :icon="icons.dashboard"
+              :text="$t('pages.dashboard.title')"
+            />
+            <a-menu-item
+              to="/artifacts"
+              :icon="icons.artifacts"
+              :text="$t('pages.artifacts.title')"
+            />
+          </can>
           <a-menu-item
-            to="/dashboard"
-            :icon="icons.dashboard"
-            :text="$t('pages.dashboard.title')"
+            to="/"
+            :icon="icons.home"
+            :text="$t('pages.home.title')"
           />
           <a-menu-item
-            to="/artifacts"
-            :icon="icons.artifacts"
-            :text="$t('pages.artifacts.title')"
+            to="/about"
+            :icon="icons.about"
+            :text="$t('pages.about.title')"
           />
-        </can>
-        <a-menu-item
-          to="/"
-          :icon="icons.home"
-          :text="$t('pages.home.title')"
-        />
-        <a-menu-item
-          to="/about"
-          :icon="icons.about"
-          :text="$t('pages.about.title')"
-        />
-        <v-divider />
-        <v-list-item>
-          <v-btn
-            icon
-            color="pink darken-3"
-            @click="$store.dispatch('common/toggleNavDrawerMini')"
+          <v-divider />
+          <v-list-item>
+            <v-btn
+              icon
+              color="pink darken-3"
+              @click="$store.dispatch('common/toggleNavDrawerMini')"
+            >
+              <v-icon>{{ mini ? icons.right : icons.left }}</v-icon>
+            </v-btn>
+          </v-list-item>
+        </v-list>
+        <v-spacer />
+        <v-list dense class="py-0">
+          <v-list-item
+            v-if="deferredPrompt"
+            @click="promptInstall"
           >
-            <v-icon>{{ mini ? icons.right : icons.left }}</v-icon>
-          </v-btn>
-        </v-list-item>
-      </v-list>
+            <v-list-item-action>
+              <v-icon color="info">
+                {{ icons.install }}
+              </v-icon>
+            </v-list-item-action>
+            <v-list-item-content class="text-capitalize font-weight-bold">
+              <v-list-item-title class="info--text">
+                {{ $t('install') }}
+              </v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+          <v-list-item v-if="isOnline">
+            <v-list-item-action>
+              <v-icon color="success">
+                {{ icons.connected }}
+              </v-icon>
+            </v-list-item-action>
+            <v-list-item-content class="text-capitalize font-weight-bold">
+              <v-list-item-title class="success--text">
+                {{ $t('online') }}
+              </v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+          <v-list-item v-if="isOffline">
+            <v-list-item-action>
+              <v-icon color="error">
+                {{ icons.disconnected }}
+              </v-icon>
+            </v-list-item-action>
+            <v-list-item-content class="text-capitalize font-weight-bold">
+              <v-list-item-title class="error--text">
+                {{ $t('offline') }}
+              </v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+        </v-list>
+      </v-layout>
     </v-navigation-drawer>
     <v-app-bar
       app
@@ -88,7 +132,18 @@
 </template>
 
 <script>
-  import { mdiHome, mdiInformation, mdiViewDashboard, mdiFileDocumentBoxMultiple, mdiChevronLeft, mdiChevronRight } from '@mdi/js'
+  import {
+    mdiBriefcaseDownload,
+    mdiChevronLeft,
+    mdiChevronRight,
+    mdiFileDocumentBoxMultiple,
+    mdiHome,
+    mdiInformation,
+    mdiViewDashboard,
+    mdiWifi,
+    mdiWifiOff
+  } from '@mdi/js'
+  import { VueOfflineMixin } from 'vue-offline'
   import AMenuItem from '@/components/menus/AMenuItem'
   import TheAccountMenu from '@/components/menus/TheAccountMenu'
   export default {
@@ -97,13 +152,18 @@
       AMenuItem,
       TheAccountMenu
     },
+    mixins: [VueOfflineMixin],
     data: () => ({
+      deferredPrompt: null,
       drawer: true,
       icons: {
         about: mdiInformation,
         artifacts: mdiFileDocumentBoxMultiple,
+        connected: mdiWifi,
         dashboard: mdiViewDashboard,
+        disconnected: mdiWifiOff,
         home: mdiHome,
+        install: mdiBriefcaseDownload,
         left: mdiChevronLeft,
         right: mdiChevronRight
       }
@@ -118,6 +178,42 @@
       },
       mini () {
         return this.$store.state.common.navDrawerIsMini
+      }
+    },
+    created () {
+      // get a reference to the store
+      // const store = this.$store
+      // when the state has been restored
+      // store._vm.$root.$on('storageReady', () => {
+      //   // set our online status
+      //   store.dispatch(this.isOnline ? 'common/resumeQueue' : 'common/pauseQueue')
+      // })
+      // // setup listeners to keep track of our current connection status
+      // this.$on('online', () => store.dispatch('common/resumeQueue'))
+      // this.$on('offline', () => store.dispatch('common/pauseQueue'))
+
+      // explicitly handle invitations to install the app
+      this.$on('canInstall', evt => {
+        // prevent Chrome 67 and earlier from automatically showing the prompt
+        evt.preventDefault()
+        // stash the event for later use
+        this.deferredPrompt = evt
+      })
+    },
+    methods: {
+      promptInstall () {
+        // show the prompt
+        this.deferredPrompt.prompt()
+
+        this.deferredPrompt.userChoice.then(res => {
+          if (res.outcome === 'accepted') {
+            console.log('installed!')
+          } else {
+            console.log('dismissed')
+          }
+        })
+
+        this.deferredPrompt = null
       }
     }
   }

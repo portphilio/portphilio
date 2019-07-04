@@ -36,6 +36,10 @@ module.exports = {
   pwa: {
     name: 'Portphilio',
     themeColor: '#f06292',
-    msTileColor: '#f06292'
+    msTileColor: '#f06292',
+    workboxPluginMode: 'InjectManifest',
+    workboxOptions: {
+      swSrc: 'src/service-worker.js'
+    }
   }
 }
