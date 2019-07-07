@@ -257,7 +257,8 @@ const actions = {
 }
 
 const getters = {
-  isAuthenticated: state => state.expiresAt && new Date().getTime() < state.expiresAt
+  isAuthenticated: state => state.expiresAt && new Date().getTime() < state.expiresAt,
+  accessToken: state => state.accessToken
 }
 
 /**

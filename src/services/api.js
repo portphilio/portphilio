@@ -1,11 +1,65 @@
-import feathers from '@feathersjs/client'
-import axios from 'axios'
+import feathers from '@feathersjs/feathers'
+// import rest from '@feathersjs/rest-client'
+// import axios from 'axios'
+import socketio from '@feathersjs/socketio-client'
+// import auth from '@feathersjs/authentication-client'
+import io from 'socket.io-client'
+import feathersVuex from 'feathers-vuex'
+// import { store } from '@/store/'
 
+// instantiate a feathers client
 const app = feathers()
-const rc = feathers.rest(process.env.VUE_APP_API_URL)
-app.configure(rc.axios(axios))
 
-export const api = app
+// configure REST
+// const restClient = rest(process.env.VUE_APP_API_URL)
+// app.configure(restClient.axios(axios))
+
+// configure socketio
+const socket = io(process.env.VUE_APP_API_URL)
+socket.on('connect', () => {
+  console.log('connecting to web socket...')
+  socket
+    .emit('authenticate', { token: 'a.bad.jwt' })
+    .on('authenticated', () => {
+      console.log('we authenticated!')
+    }).on('unauthorized', (error, callback) => {
+      if (error.data.type === 'UnauthorizedError' || error.data.code === 'invalid_token') {
+        // do something to refresh the token and/or handshake?
+        callback()
+        console.log('Invalid token')
+      }
+    })
+})
+app.configure(socketio(socket))
+
+// configure authentication for socketio
+// const VuexStorage = store => ({
+//   getItem: key => Promise.resolve(store.getters[key])
+// })
+// app.configure(auth({
+//   prefix: 'Bearer',
+//   storage: VuexStorage(store),
+//   storageKey: 'auth/accessToken'
+// }))
+
+const api = app
+
+const {
+  makeServicePlugin,
+  BaseModel,
+  models,
+  clients,
+  FeathersVuex
+} = feathersVuex(app, { serverAlias: 'api' })
+
+export {
+  api,
+  makeServicePlugin,
+  BaseModel,
+  models,
+  clients,
+  FeathersVuex
+}
 
 // export const api = token => {
 //   // TODO: Throw an error if token is not set
