@@ -1,46 +1,74 @@
 import feathers from '@feathersjs/feathers'
+import auth from '@feathersjs/authentication-client'
+import feathersVuex from 'feathers-vuex'
+import socketio from '@feathersjs/socketio-client'
+import io from 'socket.io-client'
 // import rest from '@feathersjs/rest-client'
 // import axios from 'axios'
-import socketio from '@feathersjs/socketio-client'
-// import auth from '@feathersjs/authentication-client'
-import io from 'socket.io-client'
-import feathersVuex from 'feathers-vuex'
-// import { store } from '@/store/'
 
 // instantiate a feathers client
 const app = feathers()
+
+// configure socketio
+const socket = io(process.env.VUE_APP_API_URL)
+app.configure(socketio(socket))
 
 // configure REST
 // const restClient = rest(process.env.VUE_APP_API_URL)
 // app.configure(restClient.axios(axios))
 
-// configure socketio
-const socket = io(process.env.VUE_APP_API_URL)
-socket.on('connect', () => {
-  console.log('connecting to web socket...')
-  socket
-    .emit('authenticate', { token: 'a.bad.jwt' })
-    .on('authenticated', () => {
-      console.log('we authenticated!')
-    }).on('unauthorized', (error, callback) => {
-      if (error.data.type === 'UnauthorizedError' || error.data.code === 'invalid_token') {
-        // do something to refresh the token and/or handshake?
-        callback()
-        console.log('Invalid token')
+const VuexStorage = store => ({
+  getItem: key => store.getters[key],
+  removeItem: () => {}, // noop: handled by store.auth module
+  setItem: () => {} // noop: handled by store.auth module
+})
+
+// create authentication plugin
+const createAuth0Plugin = (app, auth) => () => {
+  return store => {
+    // configure the feathers client authentication
+    app.configure(auth({
+      jwtStrategy: 'auth0',
+      storage: VuexStorage(store),
+      storageKey: 'auth/accessToken'
+    }))
+    store.subscribe(async mutation => {
+      // console.log(mutation.type)
+      // if the user has just logged in...
+      if (mutation.type === 'auth/LOGIN_SUCCESS') {
+        try {
+          // try to authenticate them against the API
+          const result = await app.authenticate()
+          // and update the user profile
+          store.commit('user/PROFILE_SUCCESS', result.user)
+        } catch (err) {
+          console.log('Authentication error: ', err.message)
+        }
+      }
+      // if the user has refreshed a session...
+      if (['auth/LOGIN_CONFIRM', 'auth/REFRESH_SUCCESS'].includes(mutation.type)) {
+        try {
+          // re-authenticate them against the API
+          await app.authenticate()
+        } catch (err) {
+          console.log('Re-authentication error: ', err.message)
+        }
+      }
+      // if the user has just logged out...
+      if (mutation.type === 'auth/LOGOUT') {
+        try {
+          // log them out from the API
+          await app.logout()
+          // and clear their profile in the app
+          store.commit('user/CLEAR_PROFILE')
+        } catch (err) {
+          console.log('Error logging out: ', err.message)
+        }
       }
     })
-})
-app.configure(socketio(socket))
-
-// configure authentication for socketio
-// const VuexStorage = store => ({
-//   getItem: key => Promise.resolve(store.getters[key])
-// })
-// app.configure(auth({
-//   prefix: 'Bearer',
-//   storage: VuexStorage(store),
-//   storageKey: 'auth/accessToken'
-// }))
+  }
+}
+const auth0Plugin = createAuth0Plugin(app, auth)
 
 const api = app
 
@@ -50,56 +78,14 @@ const {
   models,
   clients,
   FeathersVuex
-} = feathersVuex(app, { serverAlias: 'api' })
+} = feathersVuex(app, { serverAlias: 'api', idField: '_id' })
 
 export {
   api,
-  makeServicePlugin,
+  auth0Plugin,
+  FeathersVuex,
   BaseModel,
-  models,
   clients,
-  FeathersVuex
+  makeServicePlugin,
+  models
 }
-
-// export const api = token => {
-//   // TODO: Throw an error if token is not set
-
-//   const params = {
-//     headers: {
-//       'Authorization': `Bearer ${token}`
-//     }
-//   }
-
-//   return {
-//     /**
-//      * Search the Auth0 users to find any users whose email,
-//      * name, first name, last name match the given search terms.
-//      *
-//      * @param   {string}  searchTerms The terms to search users by
-//      * @returns {Promise}             A promise resolving to a page of query results
-//      */
-//     searchUsers: async searchTerms => {
-//       // add the search terms to the query
-//       // how do we want to process this? we could tokenize it,
-//       // replace spaces and/or commas with wildcards (*). we
-//       // could match against more/less/different fields
-//       // DO WE NEED TO SANITIZE THIS??? Is there any way it could be abused?
-//       params.query = {
-//         email: `*${searchTerms}*`,
-//         name: `*${searchTerms}*`,
-//         given_name: `*${searchTerms}*`,
-//         family_name: `*${searchTerms}*`
-//       }
-//       return app.service('/auth0/users').find(params)
-//     },
-//     getMembers: async query => {
-//       query = query || {}
-//       return app.service('members').find(params)
-//     },
-//     getUsers: async query => app.service('/auth0/users').find({ ...params, ...query }),
-//     getProjects: async query => app.service('/projects').find({ ...params, ...query }),
-//     getProject: async id => app.service('/projects').get(id, params),
-//     searchProjects: async query => app.service('/projects').find({ ...params, ...query }),
-//     upload: async (uri, id) => app.service('/assets').create({ id, uri }, params)
-//   }
-// }

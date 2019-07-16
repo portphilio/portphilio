@@ -29,9 +29,7 @@
       try {
         // handle the login
         await store.dispatch('auth/handle')
-        // load the user's profile
-        await store.dispatch('user/getProfile', store.state.auth.user_id)
-        // get the original destination (if any)
+        // redirect to the requested page, or dashboard if unspecified
         const to = store.getters['common/destination'] || '/dashboard'
         router.replace(to)
       } catch (err) {

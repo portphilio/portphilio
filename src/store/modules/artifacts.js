@@ -205,26 +205,6 @@ const actions = {
   save ({ commit, state, dispatch }, artifact) {
     // make sure it is in our state.artifacts array
     commit(SAVE_ARTIFACT, artifact)
-    // check for _id to see if this is a new or updated item
-    // if (!artifact._id) {
-    //   // it's a new artifact
-    //   delete artifact._id
-    //   dispatch('common/addItemToQueue', {
-    //     action: 'artifacts/create',
-    //     params: {
-    //       data: artifact
-    //     }
-    //   }, { root: true })
-    // } else {
-    //   // it is being updated
-    //   dispatch('common/addItemToQueue', {
-    //     action: 'artifacts/update',
-    //     params: {
-    //       id: artifact._id,
-    //       data: artifact
-    //     }
-    //   }, { root: true })
-    // }
   },
   setSearchTerms ({ commit }, terms) {
     commit(SET_SEARCH_TERMS, terms)

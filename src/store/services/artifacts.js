@@ -2,6 +2,10 @@ import { api, makeServicePlugin, BaseModel } from '@/services/api'
 
 class Artifact extends BaseModel {
   static modelName = 'Artifact'
+  // // eslint-disable-next-line
+  // constructor (data, options) {
+  //   super(data, options)
+  // }
   static instanceDefaults = () => ({
     createdAt: '',
     name: '',

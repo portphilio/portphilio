@@ -2,7 +2,7 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import localforage from 'localforage'
 import VuexPersistence from 'vuex-persist'
-import { api as appAPI, FeathersVuex } from '@/services/api'
+import { api as appAPI, FeathersVuex, auth0Plugin } from '@/services/api'
 import { abilityPlugin, ability as appAbility } from '@/store/abilities'
 // import artifacts from '@/store/modules/artifacts'
 import auth from '@/store/modules/auth'
@@ -42,28 +42,6 @@ const handleRestore = () => {
   }
 }
 
-// plugin to handle when the access_token changes
-const updateAccessToken = () => {
-  return store => {
-    store.subscribe(mutation => {
-      if ([
-        'auth/LOGIN_SUCCESS',
-        'auth/REFRESH_SUCCESS',
-        'auth/LOGIN_FAILURE',
-        'auth/REFRESH_FAILURE',
-        'auth/LOGOUT',
-        'RESTORE_MUTATION'
-      ].includes(mutation.type)) {
-        // get the value of the access_token from the auth state
-        const token = store.state.auth.accessToken
-        // update our API settings to use the access_token for REST
-        // appAPI.rest.defaults.headers.common['Authorization'] = token ? `Bearer ${token}` : null
-        // also re-establish the websocket connection with the new token
-      }
-    })
-  }
-}
-
 export const store = new Vuex.Store({
   strict: process.env.NODE_ENV !== 'production',
   modules: {
@@ -75,11 +53,12 @@ export const store = new Vuex.Store({
   mutations: {
     RESTORE_MUTATION: local.RESTORE_MUTATION
   },
+  // TODO: Figure out if order matters here, and if so, what it should be
   plugins: [
-    ...apiPlugins,
-    local.plugin,
     handleRestore(),
-    updateAccessToken(),
-    abilityPlugin
+    abilityPlugin,
+    auth0Plugin(),
+    local.plugin,
+    ...apiPlugins
   ]
 })

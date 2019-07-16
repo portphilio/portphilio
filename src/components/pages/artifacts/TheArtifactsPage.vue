@@ -30,78 +30,85 @@
               @input="debounceSearch"
             />
           </v-card-title>
-          <v-data-table
-            v-model="selected"
-            :footer-props="footerProps"
-            :headers="headers"
-            :items="artifacts"
-            item-key="_id"
-            multi-sort
-            :no-data-text="$t('pages.artifacts.no-data-text')"
-            :no-results-text="$t('pages.artifacts.no-results-text')"
-            :options.sync="options"
-            show-select
-            :value="selected"
+          <feathers-vuex-find
+            :fetch-query="{ userId: $store.state.auth.apiId, $limit: -1 }"
+            :query="query"
+            service="artifacts"
           >
-            <template v-slot:item.name="{ item }">
-              <a @click.stop="openEditArtifactDialog(item._id || item.uuid)">
-                {{ item.name }}
-              </a>
-            </template>
-            <template v-slot:item.status="{ item }">
-              <span class="text-capitalize td-content">{{ item.status }}</span>
-            </template>
-            <template v-slot:item.createdAt="{ item }">
-              <span class="td-content">
-                {{ format(new Date(item.createdAt), 'YYYY-MM-DD h:mm a') }}
-              </span>
-            </template>
-            <template v-slot:item.updatedAt="{ item }">
-              <span class="td-content">
-                {{ format(new Date(item.updatedAt), 'YYYY-MM-DD h:mm a') }}
-              </span>
-            </template>
-            <template v-slot:item.actions="{ item }">
-              <span class="td-content">
-                <v-btn
-                  color="primary darken-2"
-                  icon
-                  :title="$t('dialogs.delete-artifact.button')"
-                  @click.stop="openDeleteArtifactDialog(item._id || item.uuid)"
-                >
-                  <v-icon>
-                    {{ icons.trashCan }}
-                  </v-icon>
-                </v-btn>
-              </span>
-            </template>
-            <template v-slot:top>
-              <v-container py-0 px-3>
-                <v-layout>
-                  <v-flex
-                    xs12
-                    sm6
-                    offset-sm6
+            <v-data-table
+              v-model="selected"
+              slot-scope="{ items: artifacts, isFindPending: loading }"
+              :footer-props="footerProps"
+              :headers="headers"
+              :items="artifacts"
+              item-key="_id"
+              :loading="loading"
+              multi-sort
+              :no-data-text="$t('pages.artifacts.no-data-text')"
+              :no-results-text="$t('pages.artifacts.no-results-text')"
+              :options.sync="options"
+              show-select
+              :value="selected"
+            >
+              <template v-slot:item.name="{ item }">
+                <a @click.stop="openEditArtifactDialog(item._id || item.uuid)">
+                  {{ item.name }}
+                </a>
+              </template>
+              <template v-slot:item.status="{ item }">
+                <span class="text-capitalize td-content">{{ item.status }}</span>
+              </template>
+              <template v-slot:item.createdAt="{ item }">
+                <span class="td-content">
+                  {{ format(new Date(item.createdAt), 'YYYY-MM-DD h:mm a') }}
+                </span>
+              </template>
+              <template v-slot:item.updatedAt="{ item }">
+                <span class="td-content">
+                  {{ format(new Date(item.updatedAt), 'YYYY-MM-DD h:mm a') }}
+                </span>
+              </template>
+              <template v-slot:item.actions="{ item }">
+                <span class="td-content">
+                  <v-btn
+                    color="primary darken-2"
+                    icon
+                    :title="$t('dialogs.delete-artifact.button')"
+                    @click.stop="openDeleteArtifactDialog(item._id || item.uuid)"
                   >
-                    <v-select
-                      v-model="statusFilter"
-                      class="pa-0 ma-0"
-                      clearable
-                      deletable-chips
-                      dense
-                      :placeholder="$t('pages.artifacts.statuses.hint')"
-                      hide-details
-                      :items="statuses"
-                      multiple
-                      single-line
-                      small-chips
-                      @change="filterArtifacts"
-                    />
-                  </v-flex>
-                </v-layout>
-              </v-container>
-            </template>
-          </v-data-table>
+                    <v-icon>
+                      {{ icons.trashCan }}
+                    </v-icon>
+                  </v-btn>
+                </span>
+              </template>
+              <template v-slot:top>
+                <v-container py-0 px-3>
+                  <v-layout>
+                    <v-flex
+                      xs12
+                      sm6
+                      offset-sm6
+                    >
+                      <v-select
+                        v-model="statusFilter"
+                        class="pa-0 ma-0"
+                        clearable
+                        deletable-chips
+                        dense
+                        :placeholder="$t('pages.artifacts.statuses.hint')"
+                        hide-details
+                        :items="statuses"
+                        multiple
+                        single-line
+                        small-chips
+                      />
+                    </v-flex>
+                  </v-layout>
+                </v-container>
+              </template>
+            </v-data-table>
+          </feathers-vuex-find>
         </v-card>
         <v-snackbar
           v-model="snackbar.visible"
@@ -139,7 +146,6 @@
   import { debounce } from 'debounce'
   import { format } from 'date-fns'
   import { mdiClose, mdiTrashCan } from '@mdi/js'
-  import { mapGetters, mapActions } from 'vuex'
   import TheDeleteArtifactDialog from '@/components/dialogs/TheDeleteArtifactDialog'
   import TheEditArtifactDialog from '@/components/dialogs/TheEditArtifactDialog'
   export default {
@@ -200,6 +206,7 @@
           sortDesc: [true]
         },
         search: '',
+        searchTerms: '',
         selected: [],
         showDeleteDialog: false,
         showDialog: false,
@@ -219,13 +226,28 @@
       }
     },
     computed: {
-      ...mapGetters('artifacts', ['artifacts'])
+      query () {
+        // create an empty query
+        let q = {}
+        // add status filter, if necessary
+        if (this.statusFilter.length > 0) {
+          q.status = { $in: this.statusFilter }
+        }
+        // add search terms, if necessary
+        if (this.searchTerms !== '') {
+          q.$or = [
+            { name: { $search: this.searchTerms } },
+            { uri: { $search: this.searchTerms } },
+            { narrative: { $search: this.searchTerms } },
+            { tags: { $search: this.searchTerms } },
+            { 'notes.note': { $search: this.searchTerms } }
+          ]
+        }
+        // update the query
+        return q
+      }
     },
     methods: {
-      /**
-       * Map actions from the artifacts store
-       */
-      ...mapActions('artifacts', ['setSearchTerms', 'setStatuses']),
       closeDeleteArtifactDialog () {
         console.log('yo')
         this.showDeleteDialog = false
@@ -239,15 +261,8 @@
        * when people stop typing in the search box.
        */
       debounceSearch: debounce(function () {
-        this.setSearchTerms(this.search)
+        this.searchTerms = this.search
       }, 500),
-      /**
-       * Dispatches the setStatuses() action with the list of
-       * selected status in the status filter, updating the store.
-       */
-      filterArtifacts () {
-        this.setStatuses(this.statusFilter)
-      },
       handleDeletion (artifact) {
         // tell the store to remove the artifact
         this.$store.dispatch('artifacts/remove', artifact._id)

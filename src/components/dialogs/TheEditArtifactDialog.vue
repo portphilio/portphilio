@@ -117,7 +117,6 @@
 </template>
 
 <script>
-  import uuid from 'uuid/v5'
   import { mdiClose, mdiCloseCircle, mdiContentSave } from '@mdi/js'
   import GoogleDriveFilePickerDialog from '@/components/misc/GoogleDriveFilePickerDialog'
   import ToDoList from '@/components/misc/ToDoList'
@@ -139,6 +138,7 @@
     },
     data () {
       return {
+        Artifact: null,
         icons: {
           close: mdiCloseCircle,
           exit: mdiClose,
@@ -160,39 +160,33 @@
           { value: 'complete', text: 'Complete' },
           { value: 'will-not-complete', text: 'Will-Not-Complete' }
         ],
-        theArtifact: {
-          _id: null,
-          createdAt: null,
-          name: '',
-          notes: [],
-          narrative: '',
-          status: 'draft',
-          tags: [],
-          updatedAt: null,
-          uri: '',
-          userId: null,
-          uuid: null
-        },
+        theArtifact: {},
         title: '',
         valid: true
       }
     },
     watch: {
-      show (open) {
+      async show (open) {
         this.showDialog = open
         if (open) {
           if (this.artifactId === 'new') {
-            this.theArtifact = {
-              userId: this.$store.state.auth.apiId,
-              uuid: uuid(process.env.VUE_APP_AUTH0_NAMESPACE, uuid.URL)
-            }
+            const aNewArtifact = new this.Artifact({
+              userId: this.$store.state.auth.apiId
+            })
+            this.theArtifact = aNewArtifact.clone()
             this.title = this.$t('pages.new-artifact.title')
           } else {
-            this.theArtifact = this.$store.getters['artifacts/artifact'](this.artifactId)
+            console.log('artifactId: ', this.artifactId)
+            const anArtifact = await this.Artifact.getFromStore(this.artifactId)
+            this.theArtifact = anArtifact.clone()
             this.title = this.theArtifact.name
           }
         }
       }
+    },
+    mounted () {
+      console.log(this.$store.getters)
+      this.Artifact = this.$FeathersVuex.api.Artifact
     },
     methods: {
       close () {
@@ -208,17 +202,20 @@
         const now = (new Date()).toISOString()
         this.theArtifact.updatedAt = now
         // clean the _id field for any new notes
-        this.theArtifact.notes = this.theArtifact.notes.map(n => {
-          if (Number.isInteger(+n._id)) delete n._id
-          return n
-        })
+        if (this.theArtifact.notes.length > 0) {
+          this.theArtifact.notes = this.theArtifact.notes.map(n => {
+            if (Number.isInteger(+n._id)) delete n._id
+            return n
+          })
+        }
         // if this is a new artifact
         if (this.artifactId === 'new') {
           // set the createdAt timestamp
           this.theArtifact.createdAt = now
-          // save the artifact to the store
-          this.$store.dispatch('artifacts/save', this.theArtifact)
         }
+        // save the artifact to the store
+        // const artifact = new this.Artifact(this.theArtifact)
+        this.theArtifact.save()
       },
       saveAndClose () {
         this.save()

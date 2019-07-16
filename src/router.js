@@ -32,7 +32,8 @@ const router = new Router({
       name: 'artifacts',
       component: () => import(/* webpackChunkName: "artifacts" */ '@/components/pages/artifacts/TheArtifactsPage.vue'),
       meta: {
-        icon: 'mdi-file-document-box-multiple'
+        icon: 'mdi-file-document-box-multiple',
+        requiresAuthentication: true
       }
     },
     {
@@ -53,16 +54,26 @@ const router = new Router({
       name: 'dashboard',
       component: TheDashboardPage,
       meta: {
-        icon: 'mdi-view-dashboard'
+        icon: 'mdi-view-dashboard',
+        requiresAuthentication: true
       }
     }
   ]
 })
 
+// this typically only happens when the browser window has been reloaded
 const waitForStorageToBeReady = async (to, from, next) => {
+  // if the store has not been re-hydrated yet...
   if (!store._vm.$root.$data['storageReady']) {
-    store._vm.$root.$on('storageReady', () => {
+    // wait for that to happen
+    store._vm.$root.$on('storageReady', async () => {
+      // if necessary
+      if (to.meta.requiresAuthentication) {
+        await store.dispatch('auth/enticate')
+      }
+      // then refresh their capabilities
       ability.update(store.state.auth.abilities)
+      // then continue...
       next()
     })
   } else {

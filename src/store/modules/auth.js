@@ -8,6 +8,7 @@ import jws from 'jws'
 
 // mutation types
 import {
+  LOGIN_CONFIRM,
   LOGIN_REQUEST,
   LOGIN_SUCCESS,
   LOGIN_FAILURE,
@@ -102,6 +103,10 @@ const initialState = {
 const state = { ...initialState }
 
 const mutations = {
+  // TODO: Figure out a better way to do this. Custom FeathersVuex auth plugin?
+  [LOGIN_CONFIRM] () {
+    // noop: this is a hack to trigger API re-authentication
+  },
   [LOGIN_REQUEST] (state) {
     state.isAuthenticating = true
   },
@@ -126,7 +131,7 @@ const mutations = {
   [REFRESH_REQUEST] (state) {
     state.isAuthenticating = true
   },
-  [REFRESH_SUCCESS] (state, { accessToken, idTokenPayload }) {
+  [REFRESH_SUCCESS] (state, { accessToken }) {
     const accessTokenPayload = jws.decode(accessToken).payload
     state.accessToken = accessToken
     state.error = null
@@ -170,10 +175,11 @@ const actions = {
    * @param  {Function} options.dispatch Function to dispatch actions
    * @return {Promise}                   So calling scope can react
    */
-  enticate ({ state, dispatch }) {
+  enticate ({ state, commit, dispatch }) {
     const now = new Date().getTime()
     // already logged-in?
     if (state.expiresAt && now < state.expiresAt - 5000) {
+      commit(LOGIN_CONFIRM)
       return Promise.resolve('ok')
     }
     // need to refresh?
@@ -233,12 +239,16 @@ const actions = {
     // already have an unexpired token?
     if (state.googleToken && state.googleExpiry && now < state.googleExpiry - 30000) {
       commit(GOOGLE_TOKEN_SUCCESS)
+      return state.googleToken
     } else {
       await dispatch('enticate')
       return api.service('tokens')
         .update(state.user_id, {})
         .then(
-          token => commit(GOOGLE_TOKEN_SUCCESS, token),
+          token => {
+            commit(GOOGLE_TOKEN_SUCCESS, token)
+            return token
+          },
           error => commit(GOOGLE_TOKEN_FAILURE, error)
         )
     }
@@ -257,8 +267,9 @@ const actions = {
 }
 
 const getters = {
+  accessToken: state => state.accessToken,
   isAuthenticated: state => state.expiresAt && new Date().getTime() < state.expiresAt,
-  accessToken: state => state.accessToken
+  isExpired: state => state.expiresAt && new Date().getTime() >= state.expiresAt
 }
 
 /**

@@ -3,7 +3,7 @@
     color="secondary"
     @click="openPicker()"
   >
-    <v-icon left>
+    <v-icon left style="fill: white;">
       {{ icons.drive }}
     </v-icon>
     {{ $t('dialogs.google-drive.button') }}
@@ -13,13 +13,11 @@
 <script>
   /* global gapi google */
   import { mdiGoogleDrive } from '@mdi/js'
-  import { google as googleApis } from 'googleapis'
   import { setTimeout } from 'timers'
   export default {
     name: 'GoogleDriveFilePickerDialog',
     data: () => ({
       builder: null,
-      drive: googleApis.drive('v3'),
       icons: {
         drive: mdiGoogleDrive
       },
@@ -29,17 +27,18 @@
     async mounted () {
       // load the Google APIs
       await this.$loadScript('https://apis.google.com/js/api.js')
-      // then load the picker builder API
-      const loaded = await new Promise((resolve, reject) => {
-        gapi.load('picker', {
-          callback: () => { resolve(true) },
-          onerror: () => { reject(new Error('picker failed to load')) }
+      // initialize code dependent on the Google API
+      gapi.load('client', function () {
+        gapi.client.init({
+          apiKey: process.env.VUE_APP_GOOGLE_API_KEY,
+          clientId: process.env.VUE_APP_GOOGLE_CLIENT_ID,
+          discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
+          scope: 'https://www.googleapis.com/auth/drive'
         })
       })
-      // if it loaded successfully
-      if (loaded === true) {
+      gapi.load('picker', function () {
         this.builder = new google.picker.PickerBuilder()
-      }
+      }.bind(this))
     },
     methods: {
       handlePickerActions (result) {
@@ -49,13 +48,13 @@
           // result.docs contains an array of selected files
           this.$emit('google-file-picked', result.docs[0].embedUrl)
           // check to make sure artifact files are publicly accessible
-          this.drive.permissions.list({
+          gapi.client.drive.permissions.list({
             fileId: result.docs[0].id,
             oauth_token: this.token
           }).then(
-            res => {
+            response => {
               // look for permissions with type === anyone
-              const publicPerms = res.data.permissions.filter(perm => perm.type === 'anyone')
+              const publicPerms = response.result.permissions.filter(perm => perm.type === 'anyone')
               if (publicPerms.length === 0) {
                 // uh-oh! the artifact is NOT publicly available
                 this.$emit('google-file-accessible', false)
@@ -69,16 +68,16 @@
       },
       async openPicker () {
         // make sure we have a valid Google API access_token
-        await this.$store.dispatch('auth/getGoogleToken')
+        this.token = await this.$store.dispatch('auth/getGoogleToken')
         // then finish building the picker and open it
         const picker = this.builder
           .enableFeature(google.picker.Feature.SUPPORT_DRIVES)
           // .addView(new google.picker.DocsView(google.picker.ViewId.RECENTLY_PICKED))
           .addView(new google.picker.DocsView().setIncludeFolders(true).setOwnedByMe(true))
           .addView(new google.picker.DocsView().setOwnedByMe(false))
-          .setOAuthToken(this.$store.state.auth.googleToken)
+          .setOAuthToken(this.token)
           .setCallback(this.handlePickerActions)
-          .setOrigin('https://portphilio.test:8080')
+          .setOrigin(process.env.VUE_APP_AUTH0_LOGOUT_URI)
           .build()
 
         await setTimeout(() => {}, 500)
