@@ -3,9 +3,12 @@ module.exports = {
   env: {
     node: true
   },
-  'extends': [
+  extends: [
     'plugin:vue/recommended',
     '@vue/standard',
+    'vuetify'
+  ],
+  plugins: [
     'vuetify'
   ],
   rules: {
@@ -23,7 +26,10 @@ module.exports = {
       {
         singleline: 2
       }
-    ]
+    ],
+    'vuetify/no-deprecated-classes': 'error',
+    'vuetify/grid-unknown-attributes': 'error',
+    'vuetify/no-legacy-grid': 'error'
   },
   parserOptions: {
     parser: 'babel-eslint'

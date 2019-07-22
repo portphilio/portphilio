@@ -37,14 +37,6 @@ const router = new Router({
       }
     },
     {
-      path: '/artifacts/:id',
-      name: 'add/edit artifact',
-      component: () => import(/* webpackChunkName: "artifacts" */ '@/components/pages/artifacts/TheEditArtifactPage.vue'),
-      meta: {
-        icon: 'mdi-file-document-box-multiple'
-      }
-    },
-    {
       path: '/handle-auth',
       name: 'handle-auth',
       component: TheHandleAuthPage

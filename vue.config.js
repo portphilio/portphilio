@@ -10,7 +10,6 @@ module.exports = {
       }
     }
   },
-
   configureWebpack: config => {
     if (process.env.NODE_ENV !== 'production') {
       config.devServer = {
@@ -23,7 +22,6 @@ module.exports = {
       }
     }
   },
-
   pluginOptions: {
     i18n: {
       locale: 'en',
@@ -32,7 +30,6 @@ module.exports = {
       enableInSFC: false
     }
   },
-
   pwa: {
     name: 'Portphilio',
     themeColor: '#f06292',
@@ -41,5 +38,10 @@ module.exports = {
     workboxOptions: {
       swSrc: 'src/service-worker.js'
     }
-  }
+  },
+  transpileDependencies: [
+    '@feathersjs',
+    'debug',
+    'feathers-vuex'
+  ]
 }

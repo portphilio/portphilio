@@ -4,7 +4,7 @@
  * @module store/auth
  */
 // for decoding JWTs
-import jws from 'jws'
+import jws from 'jwt-decode'
 
 // mutation types
 import {
@@ -111,7 +111,7 @@ const mutations = {
     state.isAuthenticating = true
   },
   [LOGIN_SUCCESS] (state, { accessToken, idToken, idTokenPayload }) {
-    const accessTokenPayload = jws.decode(accessToken).payload
+    const accessTokenPayload = jws(accessToken)
     state.roles = idTokenPayload[ns + 'roles'] || []
     state.abilities = defineAbilitiesFor(state.roles)
     state.accessToken = accessToken
@@ -132,7 +132,7 @@ const mutations = {
     state.isAuthenticating = true
   },
   [REFRESH_SUCCESS] (state, { accessToken }) {
-    const accessTokenPayload = jws.decode(accessToken).payload
+    const accessTokenPayload = jws(accessToken)
     state.accessToken = accessToken
     state.error = null
     state.expiresAt = accessTokenPayload.exp * 1000

@@ -1,13 +1,13 @@
 <template>
   <v-container
     fluid
-    fill-height
+    class="fill-height"
   >
-    <v-layout
-      align-center
-      justify-center
+    <v-row
+      align="center"
+      justify="center"
     >
-      <div class="text-xs-center">
+      <div class="text-center">
         <v-progress-circular
           :size="70"
           :width="7"
@@ -16,7 +16,7 @@
         />
         <p>{{ $t('pages.handle-auth.logging-in') }}</p>
       </div>
-    </v-layout>
+    </v-row>
   </v-container>
 </template>
 

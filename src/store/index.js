@@ -1,8 +1,8 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import localforage from 'localforage'
-import VuexPersistence from 'vuex-persist'
-import { api as appAPI, FeathersVuex, auth0Plugin } from '@/services/api'
+import setupPersistence from './persistence'
+import { api as appAPI, auth0Plugin, FeathersVuex, models } from '@/services/api'
 import { abilityPlugin, ability as appAbility } from '@/store/abilities'
 // import artifacts from '@/store/modules/artifacts'
 import auth from '@/store/modules/auth'
@@ -22,11 +22,10 @@ const requireModule = require.context('@/store/services', false, /.js$/)
 const apiPlugins = requireModule.keys().map(path => requireModule(path).default)
 
 // setup persistent local storage for the store modules
-const local = new VuexPersistence({
+const persistence = setupPersistence({
   key: 'portphilio_vuex',
-  asyncStorage: true,
-  storage: localforage,
-  strictMode: true // always set to true to use RESTORE_MUTATION
+  feathersModels: models.api.byServicePath,
+  storage: localforage
 })
 
 // plugin to handle when store has been restored
@@ -51,14 +50,14 @@ export const store = new Vuex.Store({
     user
   },
   mutations: {
-    RESTORE_MUTATION: local.RESTORE_MUTATION
+    RESTORE_MUTATION: persistence.RESTORE_MUTATION
   },
   // TODO: Figure out if order matters here, and if so, what it should be
   plugins: [
+    persistence.plugin,
     handleRestore(),
     abilityPlugin,
     auth0Plugin(),
-    local.plugin,
     ...apiPlugins
   ]
 })

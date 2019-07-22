@@ -57,10 +57,12 @@ const createAuth0Plugin = (app, auth) => () => {
       // if the user has just logged out...
       if (mutation.type === 'auth/LOGOUT') {
         try {
-          // log them out from the API
-          await app.logout()
           // and clear their profile in the app
           store.commit('user/CLEAR_PROFILE')
+          // clear artifacts
+          store.commit('artifacts/clearAll')
+          // log them out from the API
+          await app.logout()
         } catch (err) {
           console.log('Error logging out: ', err.message)
         }
@@ -78,7 +80,7 @@ const {
   models,
   clients,
   FeathersVuex
-} = feathersVuex(app, { serverAlias: 'api', idField: '_id' })
+} = feathersVuex(app, { serverAlias: 'api' })
 
 export {
   api,

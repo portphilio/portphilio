@@ -17,7 +17,7 @@
           {{ icons.alert }}
         </v-icon>
         {{ $t('dialogs.delete-artifact.title') }}
-        <v-spacer />
+        <div class="flex-grow-1" />
         <v-btn
           color="warning"
           icon
@@ -48,11 +48,10 @@
       </v-card-text>
       <v-divider />
       <v-card-actions>
-        <v-layout
-          align-center
-          fill-height
-          justify-space-around
-          row
+        <v-row
+          align="center"
+          class="fill-height"
+          justify="space-around"
         >
           <v-btn
             color="accent"
@@ -71,7 +70,7 @@
             </v-icon>
             {{ $t('dialogs.delete-artifact.button') }}
           </v-btn>
-        </v-layout>
+        </v-row>
       </v-card-actions>
     </v-card>
   </v-dialog>

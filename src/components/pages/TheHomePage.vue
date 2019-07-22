@@ -1,15 +1,15 @@
 <template>
   <v-container>
-    <v-layout>
-      <v-flex xs12>
+    <v-row>
+      <v-col cols="12">
         <h2 class="display-2">
           Home
         </h2>
         <p>
           Here is some content.
         </p>
-      </v-flex>
-    </v-layout>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 

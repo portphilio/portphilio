@@ -6,7 +6,7 @@
       clipped
       :mini-variant="mini"
     >
-      <v-layout column fill-height>
+      <v-col class="fill-height">
         <v-list>
           <can I="update" a="Artifact">
             <a-menu-item
@@ -41,7 +41,7 @@
             </v-btn>
           </v-list-item>
         </v-list>
-        <v-spacer />
+        <div class="flex-grow-1" />
         <v-list dense class="py-0">
           <v-list-item
             v-if="deferredPrompt"
@@ -83,7 +83,7 @@
             </v-list-item-content>
           </v-list-item>
         </v-list>
-      </v-layout>
+      </v-col>
     </v-navigation-drawer>
     <v-app-bar
       app
@@ -103,7 +103,7 @@
       <v-toolbar-title class="headline text-uppercase pt-1 pink--text text--darken-3">
         Portphilio
       </v-toolbar-title>
-      <v-spacer />
+      <div class="flex-grow-1" />
       <v-toolbar-items>
         <v-btn
           v-if="!isAuthenticated"

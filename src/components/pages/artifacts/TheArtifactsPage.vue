@@ -1,8 +1,8 @@
 <template>
   <v-container>
-    <v-layout text-xs-center>
-      <v-flex xs12>
-        <h2 class="display-2 text-xs-left">
+    <v-row class="text-center">
+      <v-col cols="12">
+        <h2 class="display-2 text-left">
           {{ $t('pages.artifacts.title') }}
         </h2>
         <v-card>
@@ -17,7 +17,7 @@
               </v-icon>
               {{ $t('pages.artifacts.add-new') }}
             </v-btn>
-            <v-spacer />
+            <div class="flex-grow-1" />
             <v-text-field
               v-model="search"
               :append-icon="icons.searchArtifacts"
@@ -49,9 +49,10 @@
               :options.sync="options"
               show-select
               :value="selected"
+              @item-selected="logItem($event)"
             >
               <template v-slot:item.name="{ item }">
-                <a @click.stop="openEditArtifactDialog(item._id || item.uuid)">
+                <a @click.stop="openEditArtifactDialog(item)">
                   {{ item.name }}
                 </a>
               </template>
@@ -83,12 +84,12 @@
                 </span>
               </template>
               <template v-slot:top>
-                <v-container py-0 px-3>
-                  <v-layout>
-                    <v-flex
-                      xs12
-                      sm6
-                      offset-sm6
+                <v-container class="py-0 px-3">
+                  <v-row>
+                    <v-col
+                      cols="12"
+                      sm="6"
+                      offset-sm="6"
                     >
                       <v-select
                         v-model="statusFilter"
@@ -103,8 +104,8 @@
                         single-line
                         small-chips
                       />
-                    </v-flex>
-                  </v-layout>
+                    </v-col>
+                  </v-row>
                 </v-container>
               </template>
             </v-data-table>
@@ -128,7 +129,7 @@
           </v-btn>
         </v-snackbar>
         <the-edit-artifact-dialog
-          :artifactId="artID"
+          :artifact="artifactToEdit"
           :show="showDialog"
           @close="closeEditArtifactDialog"
         />
@@ -137,8 +138,8 @@
           :show="showDeleteDialog"
           @remove="handleDeletion($event)"
         />
-      </v-flex>
-    </v-layout>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 
@@ -156,7 +157,7 @@
     },
     data () {
       return {
-        artID: 'new',
+        artifactToEdit: {},
         footerProps: {
           itemsPerPageOptions: [10, 25, 50, -1],
           itemsPerPageText: this.$t('pages.artifacts.items-per-page-text'),
@@ -235,12 +236,14 @@
         }
         // add search terms, if necessary
         if (this.searchTerms !== '') {
+          // convert searchTerms into a $regex
+          const $regex = new RegExp(this.searchTerms.replace(',', ' ').replace(/\s+/g, '|'), 'gi')
           q.$or = [
-            { name: { $search: this.searchTerms } },
-            { uri: { $search: this.searchTerms } },
-            { narrative: { $search: this.searchTerms } },
-            { tags: { $search: this.searchTerms } },
-            { 'notes.note': { $search: this.searchTerms } }
+            { name: { $regex } },
+            { uri: { $regex } },
+            { narrative: { $regex } },
+            { tags: { $regex } },
+            { 'notes.note': { $regex } }
           ]
         }
         // update the query
@@ -272,12 +275,15 @@
         this.snackbar.text = this.$t('pages.artifacts.artifact-removed', { name: artifact.name })
         this.snackbar.visible = true
       },
+      logItem (art) {
+        console.log(art, art.item.save)
+      },
       openDeleteArtifactDialog (artifactId) {
         this.idToDelete = artifactId
         this.showDeleteDialog = true
       },
-      openEditArtifactDialog (artifactId = 'new') {
-        this.artID = artifactId
+      openEditArtifactDialog (artifact) {
+        this.artifactToEdit = artifact || new this.$FeathersVuex.api.Artifact({ userId: this.$store.state.auth.apiId })
         this.showDialog = true
       }
     }

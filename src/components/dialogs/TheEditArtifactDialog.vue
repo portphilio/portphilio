@@ -6,7 +6,7 @@
     <v-card>
       <v-card-title class="primary primary--text text--darken-3">
         {{ title }}
-        <v-spacer />
+        <div class="flex-grow-1" />
         <v-btn
           color="primary--darken-2"
           icon
@@ -19,14 +19,11 @@
         </v-btn>
       </v-card-title>
       <v-card-text>
-        <v-container grid-list-md>
-          <v-layout
-            row
-            wrap
-          >
-            <v-flex
-              xs12
-              md8
+        <v-container>
+          <v-row>
+            <v-col
+              cols="12"
+              md="8"
             >
               <v-text-field
                 v-if="showDialog"
@@ -36,10 +33,10 @@
                 :label="$t('pages.new-artifact.name')"
                 required
               />
-            </v-flex>
-            <v-flex
-              xs12
-              md4
+            </v-col>
+            <v-col
+              cols="12"
+              md="4"
             >
               <v-select
                 v-model="theArtifact.status"
@@ -47,8 +44,8 @@
                 :items="statuses"
                 :label="$t('pages.new-artifact.status')"
               />
-            </v-flex>
-            <v-flex xs12>
+            </v-col>
+            <v-col cols="12">
               <v-text-field
                 v-model="theArtifact.uri"
                 :hint="$t('pages.new-artifact.link-hint')"
@@ -57,15 +54,15 @@
               <google-drive
                 @google-file-picked="theArtifact.uri = $event"
               />
-            </v-flex>
-            <v-flex xs12>
+            </v-col>
+            <v-col cols="12">
               <v-textarea
                 v-model="theArtifact.narrative"
                 :hint="$t('pages.new-artifact.narrative-hint')"
                 :label="$t('pages.new-artifact.narrative')"
               />
-            </v-flex>
-            <v-flex xs12>
+            </v-col>
+            <v-col cols="12">
               <v-combobox
                 v-model="theArtifact.tags"
                 chips
@@ -73,15 +70,15 @@
                 :label="$t('pages.new-artifact.tags')"
                 multiple
               />
-            </v-flex>
-            <v-flex xs12>
+            </v-col>
+            <v-col cols="12">
               <span class="grey--text text--darken-1">Notes/ToDo Items</span>
               <to-do-list
                 :items="theArtifact.notes"
                 @changed="updateNotes"
               />
-            </v-flex>
-          </v-layout>
+            </v-col>
+          </v-row>
         </v-container>
         <v-divider />
       </v-card-text>
@@ -92,7 +89,7 @@
         >
           {{ $t('cancel') }}
         </v-btn>
-        <v-spacer />
+        <div class="flex-grow-1" />
         <v-btn
           color="secondary"
           @click="save()"
@@ -127,9 +124,9 @@
       ToDoList
     },
     props: {
-      artifactId: {
-        type: String,
-        default: 'new'
+      artifact: {
+        type: Object,
+        default: () => {}
       },
       show: {
         type: Boolean,
@@ -138,7 +135,6 @@
     },
     data () {
       return {
-        Artifact: null,
         icons: {
           close: mdiCloseCircle,
           exit: mdiClose,
@@ -169,52 +165,38 @@
       async show (open) {
         this.showDialog = open
         if (open) {
-          if (this.artifactId === 'new') {
-            const aNewArtifact = new this.Artifact({
-              userId: this.$store.state.auth.apiId
-            })
-            this.theArtifact = aNewArtifact.clone()
-            this.title = this.$t('pages.new-artifact.title')
-          } else {
-            console.log('artifactId: ', this.artifactId)
-            const anArtifact = await this.Artifact.getFromStore(this.artifactId)
-            this.theArtifact = anArtifact.clone()
-            this.title = this.theArtifact.name
-          }
+          // clone the artifact that was passed in
+          this.theArtifact = await this.artifact.clone()
+          // set the dialog title
+          this.title = this.artifact.name || this.$t('pages.new-artifact.title')
         }
       }
-    },
-    mounted () {
-      console.log(this.$store.getters)
-      this.Artifact = this.$FeathersVuex.api.Artifact
     },
     methods: {
       close () {
         this.$emit('close')
       },
       /**
-       * Creates or updates the artifact. Consider figuring out how
-       * to save multiple versions, so there is a revision history
-       * for each artifact in the database.
+       * Creates or updates the artifact.
+       * TODO: Consider figuring out how to save multiple versions,
+       * so there is a revision history for each artifact in the database.
        */
       save () {
         // get the current timestamp and set the updatedAt time
         const now = (new Date()).toISOString()
+        // set the time the artifact was updated
         this.theArtifact.updatedAt = now
-        // clean the _id field for any new notes
+        // if the artifact has any attached notes
         if (this.theArtifact.notes.length > 0) {
+          // clean the _id field for any new ones
           this.theArtifact.notes = this.theArtifact.notes.map(n => {
             if (Number.isInteger(+n._id)) delete n._id
             return n
           })
         }
-        // if this is a new artifact
-        if (this.artifactId === 'new') {
-          // set the createdAt timestamp
-          this.theArtifact.createdAt = now
-        }
+        // set the createdAt timestamp if necessary
+        this.theArtifact.createdAt = this.theArtifact.createdAt || now
         // save the artifact to the store
-        // const artifact = new this.Artifact(this.theArtifact)
         this.theArtifact.save()
       },
       saveAndClose () {

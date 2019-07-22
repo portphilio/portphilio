@@ -1,12 +1,12 @@
 <template>
   <v-container>
-    <v-layout>
-      <v-flex xs12>
+    <v-row>
+      <v-col cols="12">
         <h1 class="display-2">
           {{ $t('pages.dashboard.title') }}
         </h1>
-      </v-flex>
-    </v-layout>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 
