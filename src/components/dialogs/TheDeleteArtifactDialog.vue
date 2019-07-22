@@ -22,7 +22,7 @@
           color="warning"
           icon
           large
-          @click="showDialog = false"
+          @click="close"
         >
           <v-icon class="mb-2">
             {{ icons.close }}
@@ -56,7 +56,7 @@
           <v-btn
             color="accent"
             text
-            @click="showDialog = false"
+            @click="close"
           >
             {{ $t('cancel') }}
           </v-btn>
@@ -81,27 +81,29 @@
   export default {
     name: 'TheDeleteArtifactDialog',
     props: {
-      artifactId: {
-        type: String,
-        default: ''
+      artifact: {
+        type: Object,
+        default: () => {}
       },
       show: {
         type: Boolean,
         default: false
       }
     },
-    data: () => ({
-      confirmation: '',
-      icons: {
-        alert: mdiAlert,
-        close: mdiClose,
-        trashCan: mdiTrashCan
-      },
-      showDialog: false,
-      theArtifact: {
-        name: null
+    data () {
+      return {
+        confirmation: '',
+        icons: {
+          alert: mdiAlert,
+          close: mdiClose,
+          trashCan: mdiTrashCan
+        },
+        showDialog: this.show,
+        theArtifact: {
+          name: null
+        }
       }
-    }),
+    },
     computed: {
       unconfirmed () {
         return this.confirmation !== this.theArtifact.name
@@ -111,15 +113,17 @@
       show (open) {
         this.showDialog = open
         if (open) {
-          this.theArtifact = this.$store.getters['artifacts/artifact'](this.artifactId)
-          this.title = this.theArtifact.name
+          this.theArtifact = this.artifact
         }
       }
     },
     methods: {
-      async deleteArtifact () {
+      close () {
+        this.$emit('close')
+      },
+      deleteArtifact () {
         this.$emit('remove', this.theArtifact)
-        this.showDialog = false
+        this.close()
       }
     }
   }

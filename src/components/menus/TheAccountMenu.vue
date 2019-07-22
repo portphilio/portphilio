@@ -57,7 +57,7 @@
     }),
     computed: {
       avatar () {
-        return this.$store.state.user.picture
+        return (this.$store.state.auth.user || {}).picture || ''
       }
     },
     methods: {

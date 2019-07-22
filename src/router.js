@@ -53,7 +53,15 @@ const router = new Router({
   ]
 })
 
-// this typically only happens when the browser window has been reloaded
+/**
+ * This route hook forces the RESTORE_MUTATION to be the first one to
+ * execute on a page load. It allows the app state to be recovered
+ * from storage before applying any queued actions or mutations.
+ *
+ * @param {Route}    to   The route to which the user is headed
+ * @param {Route}    from The route from which the user is coming
+ * @param {Function} next Callback that signals it's okay to proceed
+ */
 const waitForStorageToBeReady = async (to, from, next) => {
   // if the store has not been re-hydrated yet...
   if (!store._vm.$root.$data['storageReady']) {
@@ -61,10 +69,10 @@ const waitForStorageToBeReady = async (to, from, next) => {
     store._vm.$root.$on('storageReady', async () => {
       // if necessary
       if (to.meta.requiresAuthentication) {
-        await store.dispatch('auth/enticate')
+        await store.dispatch('auth/checkSession')
       }
-      // then refresh their capabilities
-      ability.update(store.state.auth.abilities)
+      // then refresh their abilities
+      ability.update(store.state.auth.abilities || [])
       // then continue...
       next()
     })

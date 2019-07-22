@@ -2,12 +2,9 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import localforage from 'localforage'
 import setupPersistence from './persistence'
-import { api as appAPI, auth0Plugin, FeathersVuex, models } from '@/services/api'
-import { abilityPlugin, ability as appAbility } from '@/store/abilities'
-// import artifacts from '@/store/modules/artifacts'
-import auth from '@/store/modules/auth'
+import { api as appAPI, FeathersVuex, models } from '@/services/api'
+import { ability as appAbility } from '@/store/abilities'
 import common from '@/store/modules/common'
-import user from '@/store/modules/user'
 
 // register Vue plugins
 Vue.use(Vuex)
@@ -44,20 +41,14 @@ const handleRestore = () => {
 export const store = new Vuex.Store({
   strict: process.env.NODE_ENV !== 'production',
   modules: {
-    // artifacts,
-    auth,
-    common,
-    user
+    common
   },
   mutations: {
     RESTORE_MUTATION: persistence.RESTORE_MUTATION
   },
-  // TODO: Figure out if order matters here, and if so, what it should be
   plugins: [
     persistence.plugin,
     handleRestore(),
-    abilityPlugin,
-    auth0Plugin(),
     ...apiPlugins
   ]
 })

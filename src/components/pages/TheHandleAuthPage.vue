@@ -28,7 +28,7 @@
     async mounted () {
       try {
         // handle the login
-        await store.dispatch('auth/handle')
+        await store.dispatch('auth/handleLogin')
         // redirect to the requested page, or dashboard if unspecified
         const to = store.getters['common/destination'] || '/dashboard'
         router.replace(to)

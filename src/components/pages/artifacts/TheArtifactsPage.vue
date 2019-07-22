@@ -21,7 +21,7 @@
             <v-text-field
               v-model="search"
               :append-icon="icons.searchArtifacts"
-              class="pt-0 mt-0"
+              class="pt-0 pl-9 mt-0"
               clearable
               hide-details
               :label="$t('pages.artifacts.search')"
@@ -31,7 +31,7 @@
             />
           </v-card-title>
           <feathers-vuex-find
-            :fetch-query="{ userId: $store.state.auth.apiId, $limit: -1 }"
+            :fetch-query="{ userId: $store.state.auth.user._id, $limit: -1 }"
             :query="query"
             service="artifacts"
           >
@@ -52,9 +52,11 @@
               @item-selected="logItem($event)"
             >
               <template v-slot:item.name="{ item }">
-                <a @click.stop="openEditArtifactDialog(item)">
-                  {{ item.name }}
-                </a>
+                <span class="td-content">
+                  <a @click.stop="openEditArtifactDialog(item)">
+                    {{ item.name }}
+                  </a>
+                </span>
               </template>
               <template v-slot:item.status="{ item }">
                 <span class="text-capitalize td-content">{{ item.status }}</span>
@@ -75,7 +77,7 @@
                     color="primary darken-2"
                     icon
                     :title="$t('dialogs.delete-artifact.button')"
-                    @click.stop="openDeleteArtifactDialog(item._id || item.uuid)"
+                    @click.stop="openDeleteArtifactDialog(item)"
                   >
                     <v-icon>
                       {{ icons.trashCan }}
@@ -134,8 +136,9 @@
           @close="closeEditArtifactDialog"
         />
         <the-delete-artifact-dialog
-          :artifactId="idToDelete"
+          :artifact="artifactToDelete"
           :show="showDeleteDialog"
+          @close="closeDeleteArtifactDialog"
           @remove="handleDeletion($event)"
         />
       </v-col>
@@ -157,6 +160,7 @@
     },
     data () {
       return {
+        artifactToDelete: {},
         artifactToEdit: {},
         footerProps: {
           itemsPerPageOptions: [10, 25, 50, -1],
@@ -199,7 +203,6 @@
           searchArtifacts: 'M15.5,12C18,12 20,14 20,16.5C20,17.38 19.75,18.21 19.31,18.9L22.39,22L21,23.39L17.88,20.32C17.19,20.75 16.37,21 15.5,21C13,21 11,19 11,16.5C11,14 13,12 15.5,12M15.5,14A2.5,2.5 0 0,0 13,16.5A2.5,2.5 0 0,0 15.5,19A2.5,2.5 0 0,0 18,16.5A2.5,2.5 0 0,0 15.5,14M7,15V17H9C9.14,18.55 9.8,19.94 10.81,21H5C3.89,21 3,20.1 3,19V5C3,3.89 3.89,3 5,3H19A2,2 0 0,1 21,5V13.03C19.85,11.21 17.82,10 15.5,10C14.23,10 13.04,10.37 12.04,11H7V13H10C9.64,13.6 9.34,14.28 9.17,15H7M17,9V7H7V9H17Z',
           trashCan: mdiTrashCan
         },
-        idToDelete: null,
         options: {
           page: 1,
           itemsPerPage: 10,
@@ -252,11 +255,9 @@
     },
     methods: {
       closeDeleteArtifactDialog () {
-        console.log('yo')
         this.showDeleteDialog = false
       },
       closeEditArtifactDialog () {
-        console.log('hi')
         this.showDialog = false
       },
       /**
@@ -268,22 +269,19 @@
       }, 500),
       handleDeletion (artifact) {
         // tell the store to remove the artifact
-        this.$store.dispatch('artifacts/remove', artifact._id)
+        artifact.remove()
 
         // notify the user that it was done
         this.snackbar.color = 'success'
         this.snackbar.text = this.$t('pages.artifacts.artifact-removed', { name: artifact.name })
         this.snackbar.visible = true
       },
-      logItem (art) {
-        console.log(art, art.item.save)
-      },
-      openDeleteArtifactDialog (artifactId) {
-        this.idToDelete = artifactId
+      openDeleteArtifactDialog (artifact) {
+        this.artifactToDelete = artifact
         this.showDeleteDialog = true
       },
       openEditArtifactDialog (artifact) {
-        this.artifactToEdit = artifact || new this.$FeathersVuex.api.Artifact({ userId: this.$store.state.auth.apiId })
+        this.artifactToEdit = artifact || new this.$FeathersVuex.api.Artifact({ userId: this.$store.state.auth.user._id })
         this.showDialog = true
       }
     }
@@ -292,7 +290,7 @@
 
 <style lang="sass">
   .td-content
-    vertical-align: -2px
+    vertical-align: -6px
   .v-data-table__checkbox.v-simple-checkbox
     padding-top: 2px
 </style>

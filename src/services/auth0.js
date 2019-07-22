@@ -10,7 +10,7 @@ import auth0 from 'auth0-js'
  * @param  {Object} config Configuration options for auth0.WebAuth
  * @return {Object}        auth object encapsulating configured functions
  */
-export const createAuth = ({
+export const createAuth0Client = ({
   domain = '',
   clientID = '',
   audience = `https://${domain}/userinfo`,
