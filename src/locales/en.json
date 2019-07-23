@@ -86,6 +86,24 @@
       "save-and-close": "Save and Close",
       "save-success": "The artifact was saved successfully!",
       "save-failure": "There was a problem saving the artifact."
+    },
+    "profile": {
+      "title": "My Profile",
+      "honorific": "Title",
+      "first-name": "First Name",
+      "first-name-hint": "Your legal given name",
+      "nickname": "Nickname",
+      "nickname-hint": "Only if different from your first name",
+      "last-name": "Last Name",
+      "email": "Email",
+      "email-hint": "Can only be changed by an admin",
+      "newsletter": "Email okay?",
+      "phone": "Phone",
+      "texts": "Texts okay?",
+      "bio": "Bio",
+      "image-controls": "Image Controls",
+      "click-to-edit": "click to change profile picture",
+      "save": "Save Profile"
     }
   }
 }

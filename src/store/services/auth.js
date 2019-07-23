@@ -66,11 +66,11 @@ export default makeAuthPlugin({
       }
     },
     responseHandler: async ({ commit, state }, response) => {
+      // extract key values from the response
+      const user = response[state.responseEntityField]
+      const User = models.api.byServicePath[state.userService]
       // if the current user has not been set already
-      if (!state.user) {
-        // extract key values from the response
-        const user = response[state.responseEntityField]
-        const User = models.api.byServicePath[state.userService]
+      if (state.user._id !== user._id || !(state.user instanceof User)) {
         commit('setUser', new User(user))
         // update the user's permissions for this session
         const abilities = defineAbilitiesFor(user.app_metadata.roles, user._id)

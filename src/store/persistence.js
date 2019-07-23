@@ -49,14 +49,21 @@ const setupPersistence = ({
     for (const modelName of Object.keys(mergedState)) {
       // try to get the model class
       const Model = feathersModels[modelName]
-      // if the model class is not undefined...
+      // check the Model type
       if (Model !== undefined) {
+        // if the model class is not undefined...
         // convert items into model instances
         Object.values(mergedState[modelName].keyedById).forEach(
           item => new Model(item)
         )
       } else {
-        // just re-add the item to the store
+        // otherwise, if it's the auth module
+        if (modelName === 'auth') {
+          // convert the user into a User model instance
+          const User = feathersModels.users
+          mergedState.auth.user = new User(mergedState.auth.user)
+        }
+        // and re-add the item to the store
         this._vm.$set(state, modelName, mergedState[modelName])
       }
     }

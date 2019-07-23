@@ -49,6 +49,15 @@ const router = new Router({
         icon: 'mdi-view-dashboard',
         requiresAuthentication: true
       }
+    },
+    {
+      path: '/profile',
+      name: 'profile',
+      component: () => import(/* webpackChunkName: "artifacts" */ '@/components/pages/TheProfilePage.vue'),
+      meta: {
+        icon: 'mdi-account-box',
+        requiresAuthentication: true
+      }
     }
   ]
 })

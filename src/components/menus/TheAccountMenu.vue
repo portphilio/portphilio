@@ -20,7 +20,7 @@
       dense
       light
     >
-      <v-list-item to="account">
+      <v-list-item to="profile">
         <v-list-item-action>
           <v-icon>{{ icons.profile }}</v-icon>
         </v-list-item-action>

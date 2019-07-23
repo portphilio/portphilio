@@ -96,7 +96,12 @@ static instanceDefaults = () => ({
     updatedAt: '',
     updated_at: '',
     user_id: '',
-    user_metadata: {},
+    user_metadata: {
+      bio: '',
+      newsletter: false,
+      okToText: false,
+      title: ''
+    },
     username: ''
   })
 }
