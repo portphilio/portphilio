@@ -167,7 +167,7 @@
                   />
                   <v-btn
                     :disabled="!avatarChanged"
-                    color="secondary"
+                    color="secondary blue--text"
                     @click="saveAvatar()"
                   >
                     <v-icon left>
@@ -183,7 +183,8 @@
             <v-row class="text-center">
               <v-col>
                 <v-btn
-                  class="primary pink--text text--darken-4"
+                  color="primary black--text"
+                  :disabled="!profileChanged"
                   @click="saveProfile"
                 >
                   <v-icon left>
@@ -203,6 +204,7 @@
 <script>
   import { mdiImageSizeSelectLarge, mdiContentSave, mdiCropRotate, mdiRoundedCorner, mdiCloudUpload } from '@mdi/js'
   import { VueAvatar } from 'vue-avatar-editor-improved'
+  import { diff } from 'deep-object-diff'
   import { api } from '@/store/'
   export default {
     name: 'TheProfilePage',
@@ -217,6 +219,7 @@
         rotation: 0,
         zoom: 1
       },
+      diff,
       icons: {
         image: mdiImageSizeSelectLarge,
         crop: mdiCropRotate,
@@ -224,6 +227,7 @@
         save: mdiContentSave,
         upload: mdiCloudUpload
       },
+      original: {},
       profile: {},
       titles: [
         { value: '', text: '' },
@@ -242,14 +246,16 @@
           this.avatar.changed
         )
       },
-      profileDiff () {
-        return true
+      profileChanged () {
+        const diff = this.diff(this.original, this.profile)
+        console.log(diff)
+        return Object.keys(diff).length !== 0
       }
     },
     mounted () {
       const { User } = this.$FeathersVuex.api
-      const user = new User(this.$store.state.auth.user)
-      this.profile = user.clone()
+      this.original = new User(this.$store.state.auth.user)
+      this.profile = this.original.clone()
       console.log(this.profile)
     },
     methods: {
@@ -257,7 +263,6 @@
         const pic = this.$refs.vtr.getImageScaled().toDataURL()
         const username = this.profile.email.replace(/@.*$/, '')
         const fn = 'avatars/' + username + '_' + (new Date().getTime()) + '.png'
-        console.log(fn)
         try {
           const uploaded = await this.api.service('assets').create({ id: fn, uri: pic })
           this.profile.picture = process.env.VUE_APP_ASSETS_URL + uploaded.id

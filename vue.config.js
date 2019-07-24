@@ -4,9 +4,7 @@ module.exports = {
   css: {
     loaderOptions: {
       sass: {
-        data: '@import "~@/sass/main.scss"',
-        implementation: require('sass'),
-        fiber: require('fibers')
+        data: '@import "~@/sass/main.scss"'
       }
     }
   },

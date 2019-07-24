@@ -1,5 +1,8 @@
+
 $body-font-family: 'Josefin Sans', sans-serif;
 $heading-font-family: 'Cabin Sketch', cursive;
+// Docs say include this, but doing so overrides $heading-font-family
+@import '~vuetify/src/styles/styles.sass';
 
 // Josefin Sans metrics
 // see: https://iamvdo.me/en/blog/css-font-metrics-line-height-and-vertical-align
