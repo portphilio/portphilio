@@ -183,7 +183,7 @@
             <v-row class="text-center">
               <v-col>
                 <v-btn
-                  color="primary black--text"
+                  color="primary button--text"
                   :disabled="!profileChanged"
                   @click="saveProfile"
                 >
@@ -196,6 +196,9 @@
             </v-row>
           </v-card-actions>
         </v-card>
+        <the-unsaved-changes-dialog
+          :show="showUnsavedDialog"
+        />
       </v-col>
     </v-row>
   </v-container>
@@ -206,9 +209,11 @@
   import { VueAvatar } from 'vue-avatar-editor-improved'
   import { diff } from 'deep-object-diff'
   import { api } from '@/store/'
+  import TheUnsavedChangesDialog from '@/components/dialogs/TheUnsavedChangesDialog'
   export default {
     name: 'TheProfilePage',
     components: {
+      TheUnsavedChangesDialog,
       VueAvatar
     },
     data: () => ({
@@ -227,8 +232,9 @@
         save: mdiContentSave,
         upload: mdiCloudUpload
       },
-      original: {},
+      original: null,
       profile: {},
+      showUnsavedDialog: false,
       titles: [
         { value: '', text: '' },
         { value: 'Mr.', text: 'Mr.' },
@@ -237,6 +243,22 @@
         { value: 'Dr.', text: 'Dr.' }
       ]
     }),
+    beforeRouteLeave (to, from, next) {
+      // if there are unsaved changes on the profile
+      if (this.profileChanged) {
+        // setup the event listener
+        this.$once('close', function (type) {
+          this.showUnsavedDialog = false
+          console.log(type)
+          // this.saveProfile()
+          next(false)
+        }.bind(this))
+        // display a warning dialog
+        this.showUnsavedDialog = true
+      } else {
+        next()
+      }
+    },
     computed: {
       avatarChanged () {
         return (
@@ -248,7 +270,6 @@
       },
       profileChanged () {
         const diff = this.diff(this.original, this.profile)
-        console.log(diff)
         return Object.keys(diff).length !== 0
       }
     },
@@ -256,7 +277,6 @@
       const { User } = this.$FeathersVuex.api
       this.original = new User(this.$store.state.auth.user)
       this.profile = this.original.clone()
-      console.log(this.profile)
     },
     methods: {
       async saveAvatar () {

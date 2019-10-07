@@ -14,10 +14,17 @@
     },
     "delete-artifact": {
       "button": "Delete Artifact",
-      "hint": "Enter the full, case-senstive name of the artifact",
+      "hint": "Enter the full, case-sensitive name of the artifact",
       "instructions": "This artifact will be deleted <strong>PERMANENTLY</strong>. Are you sure you want to do this? If so, please type its full name (case-sensitive) into the text field below:",
       "name": "Type Artifact Name",
       "title": "Are you sure?"
+    },
+    "unsaved-changes": {
+      "discard": "Discard Changes",
+      "continue-editing": "Continue Editing",
+      "save": "Save Changes",
+      "title": "Unsaved Changes",
+      "text": "You have unsaved changes on this page. If you proceed, you might lose them. What would you like to do?"
     }
   },
   "install": "Add to Home Screen",
@@ -81,7 +88,7 @@
       "narrative": "Narrative",
       "narrative-hint": "What story does this artifact tell about you? See the 'Guidance' section above for ideas about what to write here.",
       "tags": "Keywords/Tags",
-      "tags-hint": "A good rule-of-thumb is that each artifact should have 3-5 key workd or phrases to describe and categorize it. Hit [enter] after typing each tag.",
+      "tags-hint": "A good rule-of-thumb is that each artifact should have 3-5 key worked or phrases to describe and categorize it. Hit [enter] after typing each tag.",
       "save": "Save",
       "save-and-close": "Save and Close",
       "save-success": "The artifact was saved successfully!",

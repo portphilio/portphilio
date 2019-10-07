@@ -4,10 +4,11 @@
     left
     offset-y
   >
-    <template v-slot:activator="{ on }">
+    <template v-slot:activator="{ on, attrs }">
       <v-btn
         text
         class="pr-0"
+        v-bind="attrs"
         v-on="on"
       >
         <v-avatar size="38">

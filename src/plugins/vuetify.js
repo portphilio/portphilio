@@ -14,7 +14,8 @@ export default new Vuetify({
         error: colors.pink.darken3,
         info: colors.lightBlue.lighten2,
         success: colors.lime.base,
-        warning: colors.yellow.darken2
+        warning: colors.yellow.darken2,
+        button: colors.pink.darken4
       }
     },
     options: {
