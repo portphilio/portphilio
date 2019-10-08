@@ -63,12 +63,12 @@
               </template>
               <template v-slot:item.createdAt="{ item }">
                 <span class="td-content">
-                  {{ format(new Date(item.createdAt), 'YYYY-MM-DD h:mm a') }}
+                  {{ format(new Date(item.createdAt), 'yyyy-MM-ss h:mm a') }}
                 </span>
               </template>
               <template v-slot:item.updatedAt="{ item }">
                 <span class="td-content">
-                  {{ format(new Date(item.updatedAt), 'YYYY-MM-DD h:mm a') }}
+                  {{ format(new Date(item.updatedAt), 'yyyy-MM-ss h:mm a') }}
                 </span>
               </template>
               <template v-slot:item.actions="{ item }">
