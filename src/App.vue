@@ -33,8 +33,9 @@
           <v-divider />
           <v-list-item>
             <v-btn
-              icon
               color="pink darken-3"
+              icon
+              name="toggleNavDrawerMini"
               @click="$store.dispatch('common/toggleNavDrawerMini')"
             >
               <v-icon>{{ mini ? icons.right : icons.left }}</v-icon>

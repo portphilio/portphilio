@@ -1,17 +1,21 @@
 module.exports = {
+  collectCoverage: false,
+  collectCoverageFrom: [
+    '<rootDir>/src/**/*.{js,vue}',
+    '!**/node_modules/**'
+  ],
   moduleFileExtensions: [
     'js',
-    'jsx',
     'json',
     'vue'
   ],
   transform: {
     '^.+\\.vue$': 'vue-jest',
     '.+\\.(css|styl|less|sass|scss|svg|png|jpg|ttf|woff|woff2)$': 'jest-transform-stub',
-    '^.+\\.jsx?$': 'babel-jest'
+    '^.+\\.js$': '<rootDir>/node_modules/babel-jest'
   },
   transformIgnorePatterns: [
-    '/node_modules/'
+    '/node_modules/(?!vuetify)'
   ],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1'
