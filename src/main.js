@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import Vue from 'vue'
 import { abilitiesPlugin, Can } from '@casl/vue'
 import LoadScript from 'vue-plugin-load-script'
