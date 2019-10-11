@@ -1,5 +1,5 @@
 ---
-name: As a (user type), I want to be (task) so that (goal).
+name: As a (user type), I want to (task) so that (goal).
 about: The title will be a user story that addresses the "who, what and why" of a
   feature.
 title: ''
