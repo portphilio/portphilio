@@ -16,7 +16,7 @@
     "@casl/ability": "^3.2.0",
     "@casl/vue": "^0.5.1",
     "@feathersjs/authentication-client": "^4.3.5",
-    "@feathersjs/feathers": "^4.3.4",
+    "@feathersjs/feathers": "^4.5.10",
     "@feathersjs/rest-client": "^4.3.5",
     "@feathersjs/socketio-client": "^4.3.5",
     "auth0-js": "^9.11.3",
