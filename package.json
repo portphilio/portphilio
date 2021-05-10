@@ -44,7 +44,7 @@
     "@mdi/js": "^4.5.95",
     "@vue/cli-plugin-babel": "^3.11.0",
     "@vue/cli-plugin-e2e-cypress": "^3.11.0",
-    "@vue/cli-plugin-eslint": "^3.11.0",
+    "@vue/cli-plugin-eslint": "^4.5.13",
     "@vue/cli-plugin-pwa": "^3.11.0",
     "@vue/cli-plugin-unit-jest": "^3.11.0",
     "@vue/cli-service": "^3.11.0",
